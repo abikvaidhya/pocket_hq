@@ -7,6 +7,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'app.dart';
 import 'core/constants/hive_boxes.dart';
 import 'data/local/hive_adapters.dart';
+import 'data/models/habit.dart';
 import 'services/notification_service.dart';
 
 Future<void> main() async {
@@ -49,8 +50,7 @@ Future<void> main() async {
 Future<void> openHiveBoxes() async {
   await Future.wait([
     Hive.openBox(HiveBoxes.settings),
-    Hive.openBox(HiveBoxes.habits),
-    Hive.openBox(HiveBoxes.notes),
+    Hive.openBox<Habit>(HiveBoxes.habits),  // typed    Hive.openBox(HiveBoxes.notes),
     Hive.openBox(HiveBoxes.vaultNotes),
     Hive.openBox(HiveBoxes.trips),
     Hive.openBox(HiveBoxes.dailyStats),
