@@ -2,6 +2,7 @@
 import 'package:hive/hive.dart';
 
 import '../models/habit.dart';
+import '../models/note.dart';
 
 /// Register all Hive type adapters here.
 /// Run `dart run build_runner build --delete-conflicting-outputs`
@@ -9,5 +10,8 @@ import '../models/habit.dart';
 Future<void> registerHiveAdapters() async {
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(HabitAdapter());
+  }
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter(NoteAdapter());
   }
 }
