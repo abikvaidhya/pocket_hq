@@ -1,9 +1,10 @@
 package com.abik.vaidhya.pocket_hq
 
+import com.abik.vaidhya.pocket_hq.usage.UsageStatsHelper
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "com.pockethq/native"
@@ -16,37 +17,34 @@ class MainActivity : FlutterFragmentActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "getTodayEvents" -> {
-                        // TODO: CalendarContract query
                         result.success(emptyList<Map<String, Any>>())
+                    }
+                    "hasUsagePermission" -> {
+                        result.success(UsageStatsHelper.hasPermission(this))
+                    }
+                    "openUsageAccessSettings" -> {
+                        UsageStatsHelper.openUsageAccessSettings(this)
+                        result.success(null)
                     }
                     "getScreenTimeToday" -> {
-                        // TODO: UsageStatsManager
-                        result.success(mapOf(
-                            "totalMs" to 0L,
-                            "formatted" to "0h 0m"
-                        ))
+                        result.success(UsageStatsHelper.getScreenTimeToday(this))
                     }
                     "getAppUsageToday" -> {
-                        result.success(emptyList<Map<String, Any>>())
+                        result.success(UsageStatsHelper.getAppUsageToday(this))
                     }
                     "authenticate" -> {
-                        // TODO: BiometricPrompt
                         result.success(false)
                     }
                     "canAuthenticate" -> {
                         result.success(false)
                     }
                     "scheduleDailyDigest" -> {
-                        val hour = call.argument<Int>("hour") ?: 8
-                        val minute = call.argument<Int>("minute") ?: 0
-                        // TODO: WorkManager
                         result.success(null)
                     }
                     "cancelDailyDigest" -> {
                         result.success(null)
                     }
                     "updateHomeWidget" -> {
-                        // TODO: GlanceAppWidgetManager
                         result.success(null)
                     }
                     else -> result.notImplemented()
@@ -55,9 +53,7 @@ class MainActivity : FlutterFragmentActivity() {
 
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, EVENTS)
             .setStreamHandler(object : EventChannel.StreamHandler {
-                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                    // Optional: push events to Flutter
-                }
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {}
                 override fun onCancel(arguments: Any?) {}
             })
     }
