@@ -69,15 +69,15 @@ class AppRouter {
           opacity: curved,
           child: SlideTransition(
             position: Tween<Offset>(
-              begin: const Offset(0.04, 0),
+              begin: const Offset(0.03, 0.01),
               end: Offset.zero,
             ).animate(curved),
             child: child,
           ),
         );
       },
-      transitionDuration: const Duration(milliseconds: 280),
-      reverseTransitionDuration: const Duration(milliseconds: 220),
+      transitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 240),
     );
   }
 

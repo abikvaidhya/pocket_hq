@@ -1,7 +1,7 @@
 name: pocket_hq
 description: 'Pocket HQ - Personal dashboard'
 publish_to: 'none'
-version: 1.0.0+3
+version: 1.0.1+4
 
 environment:
   sdk: '>=3.4.0 <4.0.0'

@@ -12,11 +12,10 @@ class SummaryCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          spacing: 10,
+          spacing: 15,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              spacing: 10,
+            Row(spacing: 10,
               children: [
                 Icon(Iconsax.calendar_1, size: 20, color: theme.colorScheme.primary),
                 Text(
@@ -75,11 +74,11 @@ class _StatChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(14),
+          color: color.withValues(alpha: 0.09),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
-            spacing: 5,
+          spacing: 5,
           children: [
             Icon(icon, size: 18, color: color),
             Text(

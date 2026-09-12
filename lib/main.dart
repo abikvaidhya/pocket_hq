@@ -9,6 +9,7 @@ import 'core/constants/hive_boxes.dart';
 import 'data/local/hive_adapters.dart';
 import 'data/models/habit.dart';
 import 'data/models/note.dart';
+import 'data/models/vault_note.dart';
 import 'services/notification_service.dart';
 
 Future<void> main() async {
@@ -49,11 +50,12 @@ Future<void> main() async {
 }
 
 Future<void> openHiveBoxes() async {
+
   await Future.wait([
     Hive.openBox(HiveBoxes.settings),
     Hive.openBox<Habit>(HiveBoxes.habits),
     Hive.openBox<Note>(HiveBoxes.notes),
-    Hive.openBox(HiveBoxes.vaultNotes),
+    Hive.openBox<VaultNote>(HiveBoxes.vaultNotes),
     Hive.openBox(HiveBoxes.trips),
     Hive.openBox(HiveBoxes.dailyStats),
     Hive.openBox(HiveBoxes.dashboardLayout),

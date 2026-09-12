@@ -57,20 +57,35 @@ class HabitTile extends StatelessWidget {
                         HapticFeedback.lightImpact();
                         onToggle();
                       },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: done
-                              ? color
-                              : color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(
-                          done ? Iconsax.tick_circle5 : Iconsax.tick_circle,
-                          color: done ? Colors.white : color,
-                          size: 24,
+                      child: AnimatedScale(
+                        scale: done ? 1.0 : 0.96,
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutCubic,
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: done
+                                ? color
+                                : color.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: done
+                                ? [
+                                    BoxShadow(
+                                      color: color.withValues(alpha: 0.28),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Icon(
+                            done ? Iconsax.tick_circle5 : Iconsax.tick_circle,
+                            color: done ? Colors.white : color,
+                            size: 22,
+                          ),
                         ),
                       ),
                     ),
