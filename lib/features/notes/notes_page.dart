@@ -58,9 +58,7 @@ class NotesPage extends ConsumerWidget {
     WidgetRef ref, {
     Note? note,
   }) async {
-    if (note == null) {
-      note = await ref.read(notesProvider.notifier).add();
-    }
+    note ??= await ref.read(notesProvider.notifier).add();
     if (!context.mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute(

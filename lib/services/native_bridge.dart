@@ -102,6 +102,25 @@ class NativeBridge {
 
   // ── Glance Widgets ────────────────────────────────────────────────────────
 
+  
+  static Future<void> updateDigestData({
+    required int habitsPending,
+    required int notesCount,
+    required int tripsToday,
+    required String summary,
+  }) async {
+    try {
+      await _channel.invokeMethod('updateDigestData', {
+        'habitsPending': habitsPending,
+        'notesCount': notesCount,
+        'tripsToday': tripsToday,
+        'summary': summary,
+      });
+    } on PlatformException catch (e) {
+      throw NativeBridgeException('updateDigestData failed: ${e.message}');
+    }
+  }
+
   static Future<void> updateHomeWidget(Map<String, dynamic> data) async {
     try {
       await _channel.invokeMethod('updateHomeWidget', data);

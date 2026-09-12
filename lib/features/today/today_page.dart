@@ -94,7 +94,7 @@ class TodayPage extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverReorderableList(
                 itemCount: cardOrder.length,
-                onReorder: (oldIndex, newIndex) {
+                onReorderItem: (oldIndex, newIndex) {
                   ref
                       .read(dashboardLayoutProvider.notifier)
                       .reorder(oldIndex, newIndex);

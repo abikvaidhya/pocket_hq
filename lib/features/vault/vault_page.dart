@@ -77,9 +77,7 @@ class _VaultPageState extends ConsumerState<VaultPage> with WidgetsBindingObserv
   }
 
   Future<void> _openEditor(BuildContext context, {VaultNote? note}) async {
-    if (note == null) {
-      note = await ref.read(vaultProvider.notifier).add();
-    }
+    note ??= await ref.read(vaultProvider.notifier).add();
     if (!context.mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute(

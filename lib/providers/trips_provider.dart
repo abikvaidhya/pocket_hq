@@ -96,7 +96,7 @@ class TripsNotifier extends StateNotifier<TripsState> {
         p.street,
         p.locality,
         p.administrativeArea,
-      ].where((e) => e != null && e!.trim().isNotEmpty).map((e) => e!.trim());
+      ].where((e) => e != null && e.trim().isNotEmpty).map((e) => e!.trim());
       final s = parts.join(', ');
       return s.isEmpty ? null : s;
     } catch (_) {

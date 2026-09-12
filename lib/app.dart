@@ -22,7 +22,6 @@ class PocketHQApp extends ConsumerWidget {
       onGenerateRoute: AppRouter.onGenerateRoute,
       initialRoute: AppRoutes.today,
       builder: (context, child) {
-        // Enforce text scale factor limit for consistent UI
         final mediaQuery = MediaQuery.of(context);
         return MediaQuery(
           data: mediaQuery.copyWith(
