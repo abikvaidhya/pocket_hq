@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../core/router/app_router.dart';
+import '../../core/widgets/matte_card.dart';
+import '../../core/theme/app_theme.dart';
 import '../../providers/dashboard_provider.dart';
 import 'widgets/summary_card.dart';
 import 'widgets/habits_preview_card.dart';
@@ -33,15 +35,16 @@ class TodayPage extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Column(
+                        spacing: 5,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             _greeting(),
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
                             ),
                           ),
-                          const SizedBox(height: 20,),
                           Text(
                             'Pocket HQ',
                             style: theme.textTheme.headlineSmall?.copyWith(
@@ -52,11 +55,19 @@ class TodayPage extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    IconButton.filledTonal(
-                      onPressed: () => AppRouter.push(context, AppRoutes.settings),
-                      icon: const Icon(Iconsax.setting_2, size: 22),
-                      style: IconButton.styleFrom(
-                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    Material(
+                      color: theme.brightness == Brightness.dark
+                          ? const Color(0xFF1E2128)
+                          : const Color(0xFFEEF0F4),
+                      borderRadius: BorderRadius.circular(AppRadii.sm),
+                      child: InkWell(
+                        onTap: () =>
+                            AppRouter.push(context, AppRoutes.settings),
+                        borderRadius: BorderRadius.circular(AppRadii.sm),
+                        child: const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Icon(Iconsax.setting_2, size: 20),
+                        ),
                       ),
                     ),
                   ],
@@ -83,8 +94,10 @@ class TodayPage extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverReorderableList(
                 itemCount: cardOrder.length,
-                onReorder: (oldIndex, newIndex) {
-                  ref.read(dashboardLayoutProvider.notifier).reorder(oldIndex, newIndex);
+                onReorderItem: (oldIndex, newIndex) {
+                  ref
+                      .read(dashboardLayoutProvider.notifier)
+                      .reorder(oldIndex, newIndex);
                 },
                 itemBuilder: (context, index) {
                   final key = cardOrder[index];
@@ -93,7 +106,7 @@ class TodayPage extends ConsumerWidget {
                     index: index,
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildCard(key),
+                      child: _buildCard(key).matteEnter(index: index),
                     ),
                   );
                 },
@@ -128,10 +141,28 @@ class TodayPage extends ConsumerWidget {
   }
 
   String _formatDate(DateTime date) {
-    const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const weekdays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
@@ -139,6 +170,7 @@ class TodayPage extends ConsumerWidget {
 
 class _BottomNav extends StatelessWidget {
   final int currentIndex;
+
   const _BottomNav({required this.currentIndex});
 
   @override
@@ -189,11 +221,11 @@ class _BottomNav extends StatelessWidget {
 }
 
 // Helper because SliverToBoxAdapter is verbose in some places
-Widget convertSliver(Widget child) =>
-    SliverToBoxAdapter(child: child);
+Widget convertSliver(Widget child) => SliverToBoxAdapter(child: child);
 
 class SliverGap extends StatelessWidget {
   final double height;
+
   const SliverGap(this.height, {super.key});
 
   @override

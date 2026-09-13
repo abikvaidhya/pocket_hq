@@ -1,95 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
-class CalendarPreviewCard extends StatelessWidget {
+import '../../../providers/calendar_provider.dart';
+
+class CalendarPreviewCard extends ConsumerWidget {
   const CalendarPreviewCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final state = ref.watch(calendarProvider);
+    final events = state.events.take(3).toList();
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          spacing: 10,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              spacing: 10,
               children: [
                 Icon(Iconsax.calendar, size: 20, color: theme.colorScheme.primary),
-                Text(
-                  'Upcoming',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Upcoming',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => ref.read(calendarProvider.notifier).refresh(),
+                  icon: const Icon(Iconsax.refresh, size: 18),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Refresh',
                 ),
               ],
             ),
-            _EventRow(
-              time: '09:30',
-              title: 'Team standup',
-              color: theme.colorScheme.primary,
-            ),
-            _EventRow(
-              time: '14:00',
-              title: 'Dentist appointment',
-              color: theme.colorScheme.tertiary,
-            ),
-            Text(
-              'Native calendar data will appear here via MethodChannel',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
-                fontStyle: FontStyle.italic,
-              ),
-            ),
+            const SizedBox(height: 12),
+            if (state.loading)
+              Text(
+                'Loading calendar…',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              )
+            else if (events.isEmpty)
+              Text(
+                state.permissionDenied
+                    ? 'Calendar permission needed. Pull refresh after granting.'
+                    : 'No events today',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              )
+            else
+              ...events.map((e) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.timeLabel,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                            ),
+                          ),
+                          Text(
+                            e.title,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _EventRow extends StatelessWidget {
-  final String time;
-  final String title;
-  final Color color;
-
-  const _EventRow({
-    required this.time,
-    required this.title,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      spacing: 10,
-      children: [
-        Container(
-          width: 4,
-          height: 36,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              time,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
-              ),
-            ),
-            Text(
-              title,
-              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }

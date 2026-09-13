@@ -22,6 +22,23 @@ class NativeBridge {
 
   // ── Usage / Screen Time ───────────────────────────────────────────────────
 
+  static Future<bool> hasUsagePermission() async {
+    try {
+      final result = await _channel.invokeMethod<bool>('hasUsagePermission');
+      return result ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  static Future<void> openUsageAccessSettings() async {
+    try {
+      await _channel.invokeMethod('openUsageAccessSettings');
+    } on PlatformException catch (e) {
+      throw NativeBridgeException('openUsageAccessSettings failed: ${e.message}');
+    }
+  }
+
   static Future<Map<String, dynamic>> getScreenTimeToday() async {
     try {
       final result = await _channel.invokeMethod<Map>('getScreenTimeToday');
@@ -85,6 +102,25 @@ class NativeBridge {
 
   // ── Glance Widgets ────────────────────────────────────────────────────────
 
+  
+  static Future<void> updateDigestData({
+    required int habitsPending,
+    required int notesCount,
+    required int tripsToday,
+    required String summary,
+  }) async {
+    try {
+      await _channel.invokeMethod('updateDigestData', {
+        'habitsPending': habitsPending,
+        'notesCount': notesCount,
+        'tripsToday': tripsToday,
+        'summary': summary,
+      });
+    } on PlatformException catch (e) {
+      throw NativeBridgeException('updateDigestData failed: ${e.message}');
+    }
+  }
+
   static Future<void> updateHomeWidget(Map<String, dynamic> data) async {
     try {
       await _channel.invokeMethod('updateHomeWidget', data);
@@ -92,8 +128,6 @@ class NativeBridge {
       throw NativeBridgeException('updateHomeWidget failed: ${e.message}');
     }
   }
-
-  // ── Event stream (optional) ───────────────────────────────────────────────
 
   static Stream<dynamic> get eventStream => _events.receiveBroadcastStream();
 }

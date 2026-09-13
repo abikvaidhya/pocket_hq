@@ -1,7 +1,7 @@
 class AppConstants {
   static const String appName = 'Pocket HQ';
-  static const String methodChannel = 'com.pockethq/native';
-  static const String eventChannel = 'com.pockethq/events';
+  static const String methodChannel = 'com.abik.vaidhya.pocket_hq/native';
+  static const String eventChannel = 'com.abik.vaidhya.pocket_hq/events';
 
   // Default dashboard card order
   static const List<String> defaultCardOrder = [
