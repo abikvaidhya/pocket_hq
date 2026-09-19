@@ -15,9 +15,9 @@ class NotesPreviewCard extends ConsumerWidget {
     final preview = notes.take(2).toList();
 
     return Card(
-      child: InkWell(
+      child: GestureDetector(
         onTap: () => AppRouter.push(context, AppRoutes.notes),
-        borderRadius: BorderRadius.circular(20),
+        // borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(

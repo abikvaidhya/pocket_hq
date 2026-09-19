@@ -2,15 +2,13 @@ import 'package:flutter/services.dart';
 
 import '../core/constants/app_constants.dart';
 
-/// Central MethodChannel + EventChannel bridge to Kotlin/Compose native code.
 class NativeBridge {
   NativeBridge._();
 
   static const MethodChannel _channel = MethodChannel(AppConstants.methodChannel);
   static const EventChannel _events = EventChannel(AppConstants.eventChannel);
 
-  // ── Calendar ──────────────────────────────────────────────────────────────
-
+  // Calendar
   static Future<List<Map<String, dynamic>>> getTodayEvents() async {
     try {
       final result = await _channel.invokeMethod<List<dynamic>>('getTodayEvents');
@@ -20,8 +18,7 @@ class NativeBridge {
     }
   }
 
-  // ── Usage / Screen Time ───────────────────────────────────────────────────
-
+  // Usage / Screen Time
   static Future<bool> hasUsagePermission() async {
     try {
       final result = await _channel.invokeMethod<bool>('hasUsagePermission');
@@ -57,8 +54,7 @@ class NativeBridge {
     }
   }
 
-  // ── Biometric ─────────────────────────────────────────────────────────────
-
+  // Biometric
   static Future<bool> authenticate({String reason = 'Unlock Vault'}) async {
     try {
       final result = await _channel.invokeMethod<bool>('authenticate', {
@@ -79,8 +75,7 @@ class NativeBridge {
     }
   }
 
-  // ── WorkManager / Daily Digest ────────────────────────────────────────────
-
+  // WorkManager / Daily Digest
   static Future<void> scheduleDailyDigest({required int hour, required int minute}) async {
     try {
       await _channel.invokeMethod('scheduleDailyDigest', {
@@ -100,9 +95,7 @@ class NativeBridge {
     }
   }
 
-  // ── Glance Widgets ────────────────────────────────────────────────────────
-
-  
+  // Glance Widgets
   static Future<void> updateDigestData({
     required int habitsPending,
     required int notesCount,

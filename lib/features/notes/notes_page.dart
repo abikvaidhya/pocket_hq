@@ -136,10 +136,10 @@ class _NoteCard extends StatelessWidget {
         onDelete();
         return false;
       },
-      child: Card(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+      child: GestureDetector(
+        onLongPress: onPin,
+        onTap: onTap,
+        child: Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -165,17 +165,13 @@ class _NoteCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: onPin,
-                      icon: Icon(
-                        note.isPinned ? Iconsax.attach_circle5 : Iconsax.attach_circle,
-                        size: 20,
-                        color: note.isPinned
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface.withValues(alpha: 0.35),
-                      ),
-                      visualDensity: VisualDensity.compact,
-                    ),
+                    // Icon(
+                    //   note.isPinned ? Iconsax.attach_circle5 : Iconsax.attach_circle,
+                    //   size: 20,
+                    //   color: note.isPinned
+                    //       ? theme.colorScheme.primary
+                    //       : theme.colorScheme.onSurface.withValues(alpha: 0.35),
+                    // )
                   ],
                 ),
                 if (note.snippet.isNotEmpty && note.title.trim().isNotEmpty) ...[

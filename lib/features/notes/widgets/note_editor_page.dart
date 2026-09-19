@@ -7,6 +7,7 @@ import '../../../providers/notes_provider.dart';
 
 class NoteEditorPage extends ConsumerStatefulWidget {
   final String noteId;
+
   const NoteEditorPage({super.key, required this.noteId});
 
   @override
@@ -94,16 +95,19 @@ class _NoteEditorPageState extends ConsumerState<NoteEditorPage> {
               IconButton(
                 onPressed: () async {
                   await ref.read(notesProvider.notifier).togglePin(note.id);
-                  setState(() => _note = ref.read(notesProvider.notifier).getById(note.id));
+                  setState(() => _note =
+                      ref.read(notesProvider.notifier).getById(note.id));
                 },
                 icon: Icon(
-                  note.isPinned ? Iconsax.attach_circle5 : Iconsax.attach_circle,
+                  note.isPinned
+                      ? Iconsax.attach_circle5
+                      : Iconsax.attach_circle,
                   color: note.isPinned ? theme.colorScheme.primary : null,
                 ),
                 tooltip: note.isPinned ? 'Unpin' : 'Pin',
               ),
             IconButton(
-              onPressed: () => _save(pop: false),
+              onPressed: () => _save(pop: true),
               icon: const Icon(Iconsax.tick_circle),
               tooltip: 'Save',
             ),
