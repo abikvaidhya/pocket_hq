@@ -76,8 +76,10 @@ class FocusNotifier extends StateNotifier<FocusState> {
 
   Future<void> refresh() async {
     state = state.copyWith(loading: true, error: null);
+
     try {
       final permitted = await NativeBridge.hasUsagePermission();
+
       if (!permitted) {
         state = state.copyWith(
           hasPermission: false,
@@ -89,8 +91,8 @@ class FocusNotifier extends StateNotifier<FocusState> {
         return;
       }
 
-      final summary = await NativeBridge.getScreenTimeToday();
-      final rawApps = await NativeBridge.getAppUsageToday();
+      final summary = await NativeBridge.getScreenTimeToday(); // fetch screen time summary
+      final rawApps = await NativeBridge.getAppUsageToday(); // fetch app usage data
 
       final apps = rawApps
           .map(AppUsageItem.fromMap)
@@ -114,6 +116,6 @@ class FocusNotifier extends StateNotifier<FocusState> {
   }
 
   Future<void> requestPermission() async {
-    await NativeBridge.openUsageAccessSettings();
+    await NativeBridge.openUsageAccessSettings(); // permission for usage access
   }
 }

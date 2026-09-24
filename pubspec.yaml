@@ -47,6 +47,11 @@ dependencies:
   json_annotation:
   collection:
 
+  # Speech and voice related
+  record:
+  just_audio:
+  speech_to_text:
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
