@@ -6,7 +6,7 @@ import '../providers/notes_provider.dart';
 import '../providers/trips_provider.dart';
 import 'digest_sync_service.dart';
 
-/// Call once after app start or when returning to Today.
+// call once after app start or when returning to Today.
 Future<void> syncWidgetAndDigest(WidgetRef ref) async {
   final habits = ref.read(activeHabitsProvider);
   final completed = habits.where((h) => h.isCompletedToday).length;

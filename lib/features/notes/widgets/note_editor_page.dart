@@ -58,7 +58,6 @@ class _NoteEditorPageState extends ConsumerState<NoteEditorPage> {
 
   Future<bool> _onWillPop() async {
     if (!_dirty) {
-      // Delete empty new notes on back
       final note = _note;
       if (note != null && note.isEmpty) {
         await ref.read(notesProvider.notifier).delete(note.id);

@@ -79,14 +79,9 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
     state = state.copyWith(loading: true, error: null);
     try {
       final status = await Permission.calendarFullAccess.request();
-      // Fallback for older permission names
       final ok = status.isGranted ||
           await Permission.calendarWriteOnly.request().isGranted ||
           (await Permission.calendarFullAccess.status).isGranted;
-
-      // if (!ok) {
-        // Still try native — may work if granted previously
-      // }
 
       final raw = await NativeBridge.getTodayEvents();
       final events = raw.map(CalendarEvent.fromMap).toList()

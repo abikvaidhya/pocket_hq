@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../theme/app_theme.dart';
 
-/// Soft matte surface — flat color, hairline border, optional soft shadow.
 class MatteCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;

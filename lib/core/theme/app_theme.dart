@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Design tokens — matte, flat, soft geometry
 class AppRadii {
   static const double xs = 10;
   static const double sm = 14;
@@ -12,7 +11,6 @@ class AppRadii {
 }
 
 class AppShadows {
-  /// Soft matte shadow (light mode)
   static List<BoxShadow> soft(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     if (isDark) {
@@ -57,8 +55,6 @@ class AppShadows {
 class AppTheme {
   static const Color _seedLight = Color(0xFF5B6CFF);
   static const Color _seedDark = Color(0xFF8B9BFF);
-
-  // Matte surface palette
   static const Color _bgLight = Color(0xFFF4F5F8);
   static const Color _bgDark = Color(0xFF0C0D10);
   static const Color _cardLight = Color(0xFFFBFBFC);
@@ -87,7 +83,6 @@ class AppTheme {
   static ThemeData _buildTheme(ColorScheme colorScheme, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
 
-    // Clean geometric sans — Inter for UI clarity
     final textTheme = GoogleFonts.interTextTheme().copyWith(
       displayLarge: GoogleFonts.inter(fontWeight: FontWeight.w700, letterSpacing: -1.2, height: 1.15),
       displayMedium: GoogleFonts.inter(fontWeight: FontWeight.w700, letterSpacing: -1.0, height: 1.15),

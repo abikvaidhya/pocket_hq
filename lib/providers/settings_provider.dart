@@ -14,7 +14,6 @@ final dynamicColorProvider = StateNotifierProvider<DynamicColorNotifier, bool>((
 
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   ThemeModeNotifier() : super(_load()) {
-    // Listen to box changes if needed
   }
 
   static ThemeMode _load() {

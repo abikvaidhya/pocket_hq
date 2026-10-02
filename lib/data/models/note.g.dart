@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Manual adapter so you don't need build_runner for the first run.
+// Manual adapter — supports older notes without voice fields.
 
 part of 'note.dart';
 
@@ -15,19 +15,23 @@ class NoteAdapter extends TypeAdapter<Note> {
     };
     return Note(
       id: fields[0] as String,
-      title: fields[1] as String,
-      body: fields[2] as String,
+      title: fields[1] as String? ?? '',
+      body: fields[2] as String? ?? '',
       createdAt: fields[3] as DateTime,
       updatedAt: fields[4] as DateTime,
-      isPinned: fields[5] as bool,
+      isPinned: fields[5] as bool? ?? false,
       colorValue: fields[6] as int?,
+      isVoice: fields[7] as bool? ?? false,
+      audioPath: fields[8] as String?,
+      durationMs: fields[9] as int?,
+      waveformPeaks: (fields[10] as List?)?.cast<double>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Note obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +45,15 @@ class NoteAdapter extends TypeAdapter<Note> {
       ..writeByte(5)
       ..write(obj.isPinned)
       ..writeByte(6)
-      ..write(obj.colorValue);
+      ..write(obj.colorValue)
+      ..writeByte(7)
+      ..write(obj.isVoice)
+      ..writeByte(8)
+      ..write(obj.audioPath)
+      ..writeByte(9)
+      ..write(obj.durationMs)
+      ..writeByte(10)
+      ..write(obj.waveformPeaks);
   }
 
   @override

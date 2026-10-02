@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-// import 'package:local_auth/error_codes.dart' as auth_error;
 
 class BiometricService {
   BiometricService._();
@@ -25,7 +24,7 @@ class BiometricService {
     }
   }
 
-  /// Returns true if authentication succeeded.
+  // returns true if authentication succeeded.
   Future<bool> authenticate({
     String reason = 'Unlock Vault',
   }) async {
@@ -36,11 +35,6 @@ class BiometricService {
       return await _auth.authenticate(
         localizedReason: reason,
         biometricOnly: false, // allow device PIN/pattern as fallback
-        // options: const AuthenticationOptions(
-        //   biometricOnly: false,
-        //   stickyAuth: true,
-        //   useErrorDialogs: true,
-        // ),
       );
     } on LocalAuthException catch (e) {
       if (e.code == LocalAuthExceptionCode.noBiometricsEnrolled ||

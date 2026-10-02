@@ -43,14 +43,15 @@ dependencies:
   intl:
   uuid:
   path_provider:
-  freezed_annotation:
-  json_annotation:
-  collection:
 
   # Speech and voice related
   record:
   just_audio:
   speech_to_text:
+  freezed_annotation:
+  json_annotation:
+  collection:
+  equatable:
 
 dev_dependencies:
   flutter_test:

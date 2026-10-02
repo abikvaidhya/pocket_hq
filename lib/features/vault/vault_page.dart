@@ -27,7 +27,7 @@ class _VaultPageState extends ConsumerState<VaultPage> with WidgetsBindingObserv
     super.dispose();
   }
 
-  /// Auto-lock when app goes to background.
+  // auto-lock when app goes to background.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||

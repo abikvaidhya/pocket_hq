@@ -120,7 +120,6 @@ class SummaryCard extends ConsumerWidget {
                   color: const Color(0xFFFF6D00),
                 ),
                 const SizedBox(width: 10),
-                // Spacer chip keeps row balanced; shows focus permission hint
                 Expanded(
                   child: focus.hasPermission
                       ? const SizedBox.shrink()

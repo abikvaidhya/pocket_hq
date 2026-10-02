@@ -111,7 +111,6 @@ class TripsNotifier extends StateNotifier<TripsState> {
       return;
     }
 
-    // End any existing active trip first
     if (state.activeTrip != null) {
       await stopTrip();
     }

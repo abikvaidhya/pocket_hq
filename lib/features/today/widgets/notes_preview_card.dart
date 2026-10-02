@@ -17,7 +17,6 @@ class NotesPreviewCard extends ConsumerWidget {
     return Card(
       child: GestureDetector(
         onTap: () => AppRouter.push(context, AppRoutes.notes),
-        // borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(

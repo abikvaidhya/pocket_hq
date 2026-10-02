@@ -3,7 +3,6 @@ class AppConstants {
   static const String methodChannel = 'com.abik.vaidhya.pocket_hq/native';
   static const String eventChannel = 'com.abik.vaidhya.pocket_hq/events';
 
-  // Default dashboard card order
   static const List<String> defaultCardOrder = [
     'summary',
     'habits',
@@ -13,7 +12,6 @@ class AppConstants {
     'trips',
   ];
 
-  // Permissions
   static const List<String> requiredPermissions = [
     'android.permission.PACKAGE_USAGE_STATS',
     'android.permission.READ_CALENDAR',

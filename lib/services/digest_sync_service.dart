@@ -1,6 +1,6 @@
 import '../services/native_bridge.dart';
 
-/// Pushes summary data to native SharedPreferences for WorkManager + Glance.
+// pushes summary data to native SharedPreferences for WorkManager + Glance.
 class DigestSyncService {
   DigestSyncService._();
   static final DigestSyncService instance = DigestSyncService._();

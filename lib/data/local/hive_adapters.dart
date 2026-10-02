@@ -6,9 +6,6 @@ import '../models/note.dart';
 import '../models/trip.dart';
 import '../models/vault_note.dart';
 
-/// Register all Hive type adapters here.
-/// Run `dart run build_runner build --delete-conflicting-outputs`
-/// after adding @HiveType models.
 Future<void> registerHiveAdapters() async {
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(HabitAdapter());

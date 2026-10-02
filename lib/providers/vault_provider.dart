@@ -50,7 +50,6 @@ class VaultNotifier extends StateNotifier<VaultState> {
   Future<void> init() async {
     final available = await BiometricService.instance.canCheckBiometrics;
     state = state.copyWith(biometricsAvailable: available);
-    // Stay locked by default
   }
 
   Future<bool> unlock() async {
@@ -71,8 +70,8 @@ class VaultNotifier extends StateNotifier<VaultState> {
     return true;
   }
 
-  /// Soft unlock for devices without biometrics (dev / fallback).
-  /// Still requires explicit user action.
+  // soft unlock for devices without biometrics (dev/fallback).
+  // still requires explicit user action.
   Future<void> unlockWithoutBiometrics() async {
     _loadNotes();
     state = state.copyWith(unlocked: true, loading: false, error: null);
