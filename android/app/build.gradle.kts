@@ -1,13 +1,13 @@
 plugins {
     id("com.android.application")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+//    id("org.jetbrains.kotlin.android")
 }
 
 android {
-    // buildFeatures {
-    //     compose = true
-    // }
+//     buildFeatures {
+//         compose = true
+//     }
     
     namespace = "com.abik.vaidhya.pocket_hq"
     compileSdk = flutter.compileSdkVersion
@@ -60,6 +60,7 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     // Glance (home screen widgets)
+    implementation("androidx.glance:glance:1.1.1")
     implementation("androidx.glance:glance-appwidget:1.1.1")
     implementation("androidx.glance:glance-material3:1.1.1")
 // Compose runtime (required by Glance)
@@ -68,4 +69,15 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:1.7.6")
     implementation("androidx.work:work-runtime-ktx:2.11.2")
     implementation("androidx.core:core-ktx:1.15.0")
+}
+
+// force select single Glance version everywhere
+configurations.all {
+    resolutionStrategy {
+        force(
+            "androidx.glance:glance:1.1.1",
+            "androidx.glance:glance-appwidget:1.1.1",
+            "androidx.glance:glance-material3:1.1.1"
+        )
+    }
 }

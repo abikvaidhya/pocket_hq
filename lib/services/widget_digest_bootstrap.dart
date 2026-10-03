@@ -5,8 +5,9 @@ import '../providers/habits_provider.dart';
 import '../providers/notes_provider.dart';
 import '../providers/trips_provider.dart';
 import 'digest_sync_service.dart';
+import 'widget_sync_service.dart';
 
-// call once after app start or when returning to Today.
+/// Call after app start / when returning to Today.
 Future<void> syncWidgetAndDigest(WidgetRef ref) async {
   final habits = ref.read(activeHabitsProvider);
   final completed = habits.where((h) => h.isCompletedToday).length;
@@ -27,4 +28,7 @@ Future<void> syncWidgetAndDigest(WidgetRef ref) async {
     tripsToday: tripsToday,
     screenTimeFormatted: screen,
   );
+
+  await WidgetSyncService.instance.applyWidgetHabitCompletions(ref);
+  await WidgetSyncService.instance.sync(ref);
 }

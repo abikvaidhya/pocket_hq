@@ -13,8 +13,7 @@ final dynamicColorProvider = StateNotifierProvider<DynamicColorNotifier, bool>((
 });
 
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  ThemeModeNotifier() : super(_load()) {
-  }
+  ThemeModeNotifier() : super(_load());
 
   static ThemeMode _load() {
     final box = Hive.box(HiveBoxes.settings);

@@ -114,6 +114,27 @@ class NativeBridge {
     }
   }
 
+
+  static Future<List<String>> drainWidgetHabitCompletions() async {
+    try {
+      final result =
+          await _channel.invokeMethod<List<dynamic>>('drainWidgetHabitCompletions');
+      return (result ?? []).map((e) => e.toString()).toList();
+    } on PlatformException {
+      return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getPendingDeepLink() async {
+    try {
+      final result = await _channel.invokeMethod<Map>('getPendingDeepLink');
+      if (result == null) return null;
+      return Map<String, dynamic>.from(result);
+    } on PlatformException {
+      return null;
+    }
+  }
+
   static Future<void> updateHomeWidget(Map<String, dynamic> data) async {
     try {
       await _channel.invokeMethod('updateHomeWidget', data);
