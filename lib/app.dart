@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
+import 'core/constants/hive_boxes.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/settings_provider.dart';
@@ -26,6 +29,18 @@ class _PocketHQAppState extends ConsumerState<PocketHQApp>
       _handleDeepLink();
       syncWidgetAndDigest(ref);
     });
+    setAppVersionCode();
+  }
+
+  Future<void> setAppVersionCode() async {
+    final box = Hive.box(HiveBoxes.settings);
+    box.clear();
+
+    PackageInfo info = await PackageInfo.fromPlatform();
+
+    String version = '${info.version}+${info.buildNumber}';
+
+    box.put(HiveKeys.appVersion, version);
   }
 
   @override
@@ -76,7 +91,7 @@ class _PocketHQAppState extends ConsumerState<PocketHQApp>
               mediaQuery.textScaler.scale(1.0).clamp(0.85, 1.15),
             ),
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: child ?? const Center(child: CircularProgressIndicator()),
         );
       },
     );

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/router/app_router.dart';
 import '../../data/models/trip.dart';
 import '../../providers/trips_provider.dart';
 import '../bottom_nav_bar.dart';

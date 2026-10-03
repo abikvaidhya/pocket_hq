@@ -4,11 +4,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../core/constants/hive_boxes.dart';
 
-final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+final themeModeProvider =
+    StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
   return ThemeModeNotifier();
 });
 
-final dynamicColorProvider = StateNotifierProvider<DynamicColorNotifier, bool>((ref) {
+final dynamicColorProvider =
+    StateNotifierProvider<DynamicColorNotifier, bool>((ref) {
   return DynamicColorNotifier();
 });
 

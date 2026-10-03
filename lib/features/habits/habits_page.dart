@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../../core/router/app_router.dart';
 import '../../data/models/habit.dart';
 import '../../providers/habits_provider.dart';
 import '../bottom_nav_bar.dart';

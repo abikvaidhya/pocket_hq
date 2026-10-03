@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/router/app_router.dart';
 import '../../data/models/note.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/voice_playback_provider.dart';

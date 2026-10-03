@@ -43,6 +43,7 @@ dependencies:
   intl:
   uuid:
   path_provider:
+  package_info_plus:
 
   # Speech and voice related
   record:

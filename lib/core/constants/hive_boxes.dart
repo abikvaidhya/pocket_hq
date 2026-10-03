@@ -10,6 +10,7 @@ class HiveBoxes {
 
 class HiveKeys {
   // Settings
+  static const String appVersion = 'app_version';
   static const String themeMode = 'theme_mode';
   static const String dynamicColor = 'dynamic_color';
   static const String dailyDigestHour = 'daily_digest_hour';
