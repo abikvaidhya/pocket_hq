@@ -7,6 +7,7 @@ import '../data/models/note.dart';
 import '../providers/focus_provider.dart';
 import '../providers/habits_provider.dart';
 import '../providers/notes_provider.dart';
+import '../providers/carts_provider.dart';
 import 'native_bridge.dart';
 
 /// Pushes Notes / Habits / Screen-time payloads to the Android Glance widget.
@@ -27,6 +28,17 @@ class WidgetSyncService {
         'minutes': a.totalTimeMs ~/ 60000,
       };
     }).toList();
+    final pinnedCart = ref.read(pinnedCartProvider);
+    final cartPayload = pinnedCart == null
+        ? <String, dynamic>{}
+        : {
+            'id': pinnedCart.id,
+            'title': pinnedCart.preview,
+            'items': pinnedCart.sortedItems
+                .take(8)
+                .map((e) => {'name': e.name, 'checked': e.checked})
+                .toList(),
+          };
 
     try {
       await NativeBridge.updateHomeWidget({
@@ -36,6 +48,7 @@ class WidgetSyncService {
         'habitsJson': jsonEncode(habitsPayload),
         'appsJson': jsonEncode(appsPayload),
         'screenTotal': focus.hasPermission ? focus.formatted : '—',
+        'cartJson': jsonEncode(cartPayload),
       });
     } catch (_) {}
   }

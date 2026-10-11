@@ -96,8 +96,9 @@ class MainActivity : FlutterFragmentActivity() {
                     val habitsJson = data["habitsJson"] as? String ?: "[]"
                     val appsJson = data["appsJson"] as? String ?: "[]"
                     val screenTotal = data["screenTotal"] as? String ?: "0m"
+                    val cartJson = data["cartJson"] as? String ?: "{}"
                     WidgetDataStore.saveFromFlutter(
-                        this, notesJson, habitsJson, appsJson, screenTotal
+                        this, notesJson, habitsJson, appsJson, screenTotal, cartJson
                     )
                     // Keep legacy keys for any old UI
                     getSharedPreferences(WidgetDataStore.PREFS, Context.MODE_PRIVATE)

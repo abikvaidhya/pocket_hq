@@ -65,6 +65,15 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/tab_cart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="6dp"
+                android:text="Cart"
+                android:textColor="#9AA0A8"
+                android:textSize="12sp" />
+
+            <TextView
                 android:id="@+id/btn_next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -7,6 +7,8 @@ import '../../features/notes/notes_page.dart';
 import '../../features/vault/vault_page.dart';
 import '../../features/trips/trips_page.dart';
 import '../../features/settings/settings_page.dart';
+import '../../features/carts/carts_page.dart';
+import '../../features/reminders/reminders_page.dart';
 
 class AppRoutes {
   static const String today = '/today';
@@ -16,6 +18,8 @@ class AppRoutes {
   static const String vault = '/vault';
   static const String trips = '/trips';
   static const String settings = '/settings';
+  static const String carts = '/carts';
+  static const String reminders = '/reminders';
   static const String habitDetail = '/habits/detail';
   static const String noteEditor = '/notes/editor';
   static const String tripDetail = '/trips/detail';
@@ -41,6 +45,10 @@ class AppRouter {
         return _buildRoute(const TripsPage(), settings);
       case AppRoutes.settings:
         return _buildRoute(const SettingsPage(), settings);
+      case AppRoutes.carts:
+        return _buildRoute(const CartsPage(), settings);
+      case AppRoutes.reminders:
+        return _buildRoute(const RemindersPage(), settings);
       case AppRoutes.habitDetail:
         final id = (args is Map) ? args['id'] as String? : null;
         return _buildRoute(HabitsPage(initialHabitId: id), settings);

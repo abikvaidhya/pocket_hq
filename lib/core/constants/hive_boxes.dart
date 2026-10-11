@@ -6,6 +6,8 @@ class HiveBoxes {
   static const String trips = 'trips';
   static const String dailyStats = 'daily_stats';
   static const String dashboardLayout = 'dashboard_layout';
+  static const String shoppingCarts = 'shopping_carts';
+  static const String reminders = 'reminders';
 }
 
 class HiveKeys {

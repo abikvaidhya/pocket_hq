@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive/hive.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../core/constants/hive_boxes.dart';
 import '../../core/router/app_router.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -16,6 +13,7 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final dynamicColor = ref.watch(dynamicColorProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -76,6 +74,32 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(
             height: 20,
           ),
+          _SectionHeader(title: 'Lists & time'),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Iconsax.shopping_cart),
+                  title: const Text('Shopping carts'),
+                  subtitle:
+                      const Text('Checkable lists · pin one to the widget'),
+                  trailing: const Icon(Iconsax.arrow_right_3, size: 18),
+                  onTap: () => AppRouter.push(context, AppRoutes.carts),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Iconsax.timer_1),
+                  title: const Text('Quick reminders'),
+                  subtitle: const Text('Hold to speak · timers & alarms'),
+                  trailing: const Icon(Iconsax.arrow_right_3, size: 18),
+                  onTap: () => AppRouter.push(context, AppRoutes.reminders),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
           _SectionHeader(title: 'Security'),
           Card(
             child: ListTile(
@@ -90,55 +114,18 @@ class SettingsPage extends ConsumerWidget {
             height: 20,
           ),
           _SectionHeader(title: 'About'),
-          AppVersionCard(),
+          Card(
+            child: ListTile(
+              leading: const Icon(Iconsax.info_circle),
+              title: const Text('Pocket HQ'),
+              subtitle: Text(
+                'v1.0.0',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+          ),
+          const SizedBox(height: 40,),
         ],
-      ),
-    );
-  }
-}
-
-class AppVersionCard extends StatefulWidget {
-  const AppVersionCard({super.key});
-
-  @override
-  State<AppVersionCard> createState() => _AppVersionCardState();
-}
-
-class _AppVersionCardState extends State<AppVersionCard> {
-  String version = '';
-
-  @override
-  void initState() {
-    super.initState();
-    getAppVersionCode();
-  }
-
-  Future<void> getAppVersionCode() async {
-    final box = Hive.box(HiveBoxes.settings);
-    version = await box.get(HiveKeys.appVersion) ?? '';
-    if (version == '') {
-      PackageInfo info = await PackageInfo.fromPlatform();
-
-      version = '${info.version}+${info.buildNumber}';
-      // debugPrint('>> got version: ${info.version}+${info.buildNumber} ');
-    }
-    // debugPrint('>> version: $version');
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      margin: EdgeInsets.only(bottom: 20),
-      child: ListTile(
-        leading: Icon(Iconsax.info_circle),
-        title: Text('Pocket HQ'),
-        subtitle: Text(
-          'App version : $version',
-          style: theme.textTheme.bodySmall,
-        ),
       ),
     );
   }
@@ -148,23 +135,6 @@ class _SectionHeader extends StatelessWidget {
   final String title;
 
   const _SectionHeader({required this.title});
-
-  Future<String> getAppVersionCode() async {
-    final box = Hive.box(HiveBoxes.settings);
-    String version = await box.get(HiveKeys.appVersion) ?? '';
-    if (version == '') {
-      version = await getAppVersion();
-    }
-    return version;
-  }
-
-  Future<String> getAppVersion() async {
-    PackageInfo info = await PackageInfo.fromPlatform();
-    String version = info.version; // App version
-    String buildNumber = info.buildNumber; // Build number
-
-    return version + buildNumber;
-  }
 
   @override
   Widget build(BuildContext context) {

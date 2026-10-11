@@ -9,13 +9,9 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.view.View
 import android.widget.RemoteViews
-import com.abik.vaidhya.pocket_hq.MainActivity
-import com.abik.vaidhya.pocket_hq.R
+import com.pockethq.MainActivity
+import com.pockethq.R
 
-/**
- * Classic RemoteViews home widget (no Glance / Compose).
- * Sections: 0 Notes · 1 Habits · 2 Screen — cycle via next/prev or tabs.
- */
 class PocketHQWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(
@@ -117,6 +113,10 @@ class PocketHQWidgetProvider : AppWidgetProvider() {
                 R.id.tab_screen,
                 pendingBroadcast(context, ACTION_SET_PAGE, EXTRA_PAGE to 2)
             )
+            views.setOnClickPendingIntent(
+                R.id.tab_cart,
+                pendingBroadcast(context, ACTION_SET_PAGE, EXTRA_PAGE to 3)
+            )
 
             // Highlight tabs
             val accent = 0xFF8B9BFF.toInt()
@@ -124,6 +124,7 @@ class PocketHQWidgetProvider : AppWidgetProvider() {
             views.setTextColor(R.id.tab_notes, if (page == 0) accent else muted)
             views.setTextColor(R.id.tab_habits, if (page == 1) accent else muted)
             views.setTextColor(R.id.tab_screen, if (page == 2) accent else muted)
+            views.setTextColor(R.id.tab_cart, if (page == 3) accent else muted)
 
             // Hide all rows first
             for (i in 0 until 4) {
@@ -134,7 +135,8 @@ class PocketHQWidgetProvider : AppWidgetProvider() {
             when (page) {
                 0 -> bindNotes(context, views)
                 1 -> bindHabits(context, views)
-                else -> bindScreen(context, views)
+                2 -> bindScreen(context, views)
+                else -> bindCart(context, views)
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
@@ -265,6 +267,44 @@ class PocketHQWidgetProvider : AppWidgetProvider() {
                     "${app.minutes / 60}h ${app.minutes % 60}m"
                 }
                 views.setTextViewText(tid, "${app.name}  ·  $mins")
+            }
+        }
+
+
+        private fun bindCart(context: Context, views: RemoteViews) {
+            val cart = WidgetDataStore.getCart(context)
+            views.setOnClickPendingIntent(
+                R.id.widget_root,
+                pendingBroadcast(context, ACTION_OPEN_APP, EXTRA_ROUTE to "/carts")
+            )
+
+            if (cart.id.isNullOrBlank() || cart.title.isNullOrBlank()) {
+                views.setTextViewText(R.id.section_title, "Shopping cart")
+                views.setViewVisibility(R.id.row_0, View.VISIBLE)
+                views.setTextViewText(
+                    R.id.row_0_text,
+                    "Nothing pinned. Pin a cart in the app to show it here."
+                )
+                views.setViewVisibility(R.id.row_0_action, View.GONE)
+                return
+            }
+
+            views.setTextViewText(R.id.section_title, cart.title)
+            val rows = cart.items.take(4)
+            if (rows.isEmpty()) {
+                views.setViewVisibility(R.id.row_0, View.VISIBLE)
+                views.setTextViewText(R.id.row_0_text, "Cart is empty")
+                views.setViewVisibility(R.id.row_0_action, View.GONE)
+                return
+            }
+
+            rows.forEachIndexed { index, item ->
+                val rid = rowId(index)
+                val tid = textId(index)
+                views.setViewVisibility(rid, View.VISIBLE)
+                views.setViewVisibility(actionId(index), View.GONE)
+                val prefix = if (item.checked) "✓  " else "○  "
+                views.setTextViewText(tid, prefix + item.name)
             }
         }
 

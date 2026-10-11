@@ -6,25 +6,27 @@ import org.json.JSONObject
 
 object WidgetDataStore {
     const val PREFS = "pocket_hq_widget"
-    private const val KEY_PAGE = "page" // 0 notes, 1 habits, 2 screen
+    private const val KEY_PAGE = "page"
     private const val KEY_NOTES = "notes_json"
     private const val KEY_HABITS = "habits_json"
     private const val KEY_APPS = "apps_json"
     private const val KEY_SCREEN_TOTAL = "screen_total"
+    private const val KEY_CART = "cart_json"
     private const val KEY_COMPLETED_QUEUE = "habit_completed_queue"
+    private const val PAGE_COUNT = 4
 
     fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun getPage(context: Context): Int =
-        prefs(context).getInt(KEY_PAGE, 0).coerceIn(0, 2)
+        prefs(context).getInt(KEY_PAGE, 0).coerceIn(0, PAGE_COUNT - 1)
 
     fun setPage(context: Context, page: Int) {
-        prefs(context).edit().putInt(KEY_PAGE, page.coerceIn(0, 2)).apply()
+        prefs(context).edit().putInt(KEY_PAGE, page.coerceIn(0, PAGE_COUNT - 1)).apply()
     }
 
     fun cyclePage(context: Context, delta: Int): Int {
-        val next = (getPage(context) + delta + 3) % 3
+        val next = (getPage(context) + delta + PAGE_COUNT) % PAGE_COUNT
         setPage(context, next)
         return next
     }
@@ -49,18 +51,31 @@ object WidgetDataStore {
         val minutes: Int
     )
 
+    data class CartItemRow(
+        val name: String,
+        val checked: Boolean
+    )
+
+    data class CartPayload(
+        val id: String?,
+        val title: String?,
+        val items: List<CartItemRow>
+    )
+
     fun saveFromFlutter(
         context: Context,
         notesJson: String,
         habitsJson: String,
         appsJson: String,
-        screenTotal: String
+        screenTotal: String,
+        cartJson: String = "{}"
     ) {
         prefs(context).edit()
             .putString(KEY_NOTES, notesJson)
             .putString(KEY_HABITS, habitsJson)
             .putString(KEY_APPS, appsJson)
             .putString(KEY_SCREEN_TOTAL, screenTotal)
+            .putString(KEY_CART, cartJson)
             .apply()
     }
 
@@ -132,7 +147,32 @@ object WidgetDataStore {
     fun getScreenTotal(context: Context): String =
         prefs(context).getString(KEY_SCREEN_TOTAL, "0m") ?: "0m"
 
-    /** Remove habit from widget list and queue id for Flutter to apply. */
+    fun getCart(context: Context): CartPayload {
+        val raw = prefs(context).getString(KEY_CART, "{}") ?: "{}"
+        return try {
+            val o = JSONObject(raw)
+            val itemsArr = o.optJSONArray("items") ?: JSONArray()
+            val items = buildList {
+                for (i in 0 until itemsArr.length()) {
+                    val it = itemsArr.getJSONObject(i)
+                    add(
+                        CartItemRow(
+                            name = it.optString("name", "Item"),
+                            checked = it.optBoolean("checked", false)
+                        )
+                    )
+                }
+            }
+            CartPayload(
+                id = o.optString("id", null).takeIf { !it.isNullOrBlank() },
+                title = o.optString("title", null).takeIf { !it.isNullOrBlank() },
+                items = items
+            )
+        } catch (_: Exception) {
+            CartPayload(null, null, emptyList())
+        }
+    }
+
     fun completeHabit(context: Context, habitId: String) {
         val remaining = getHabits(context).filter { it.id != habitId }
         val arr = JSONArray()
@@ -157,7 +197,6 @@ object WidgetDataStore {
             .apply()
     }
 
-    /** Flutter reads + clears on resume. */
     fun drainCompletedHabitIds(context: Context): List<String> {
         val queue = prefs(context).getString(KEY_COMPLETED_QUEUE, "[]") ?: "[]"
         val ids = try {
