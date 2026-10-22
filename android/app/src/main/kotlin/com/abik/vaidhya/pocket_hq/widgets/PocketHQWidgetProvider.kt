@@ -9,8 +9,8 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.view.View
 import android.widget.RemoteViews
-import com.pockethq.MainActivity
-import com.pockethq.R
+import com.abik.vaidhya.pocket_hq.MainActivity
+import com.abik.vaidhya.pocket_hq.R
 
 class PocketHQWidgetProvider : AppWidgetProvider() {
 

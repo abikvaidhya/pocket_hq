@@ -9,6 +9,8 @@ import 'core/constants/hive_boxes.dart';
 import 'data/local/hive_adapters.dart';
 import 'data/models/habit.dart';
 import 'data/models/note.dart';
+import 'data/models/reminder.dart';
+import 'data/models/shopping_cart.dart';
 import 'data/models/trip.dart';
 import 'data/models/vault_note.dart';
 import 'services/notification_service.dart';
@@ -60,5 +62,7 @@ Future<void> openHiveBoxes() async {
     Hive.openBox<Trip>(HiveBoxes.trips),
     Hive.openBox(HiveBoxes.dailyStats),
     Hive.openBox(HiveBoxes.dashboardLayout),
+    Hive.openBox<ShoppingCart>(HiveBoxes.shoppingCarts),
+    Hive.openBox<Reminder>(HiveBoxes.reminders),
   ]);
 }

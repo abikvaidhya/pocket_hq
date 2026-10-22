@@ -10,47 +10,57 @@ class CustomBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationBar(elevation: 5,
-      selectedIndex: currentIndex,
-      onDestinationSelected: (index) {
-        final routes = [
-          AppRoutes.today,
-          AppRoutes.habits,
-          AppRoutes.focus,
-          AppRoutes.notes,
-          AppRoutes.trips,
-        ];
-        if (index != currentIndex) {
-          AppRouter.pushReplacement(context, routes[index]);
-        }
-      },
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Iconsax.home),
-          selectedIcon: Icon(Iconsax.home_1),
-          label: 'Today',
-        ),
-        NavigationDestination(
-          icon: Icon(Iconsax.task_square),
-          selectedIcon: Icon(Iconsax.task_square5),
-          label: 'Habits',
-        ),
-        NavigationDestination(
-          icon: Icon(Iconsax.chart_2),
-          selectedIcon: Icon(Iconsax.chart_21),
-          label: 'Focus',
-        ),
-        NavigationDestination(
-          icon: Icon(Iconsax.note_1),
-          selectedIcon: Icon(Iconsax.note_15),
-          label: 'Notes',
-        ),
-        NavigationDestination(
-          icon: Icon(Iconsax.map),
-          selectedIcon: Icon(Iconsax.map5),
-          label: 'Trips',
-        ),
-      ],
+    return Container(
+      margin: EdgeInsets.all(10),
+      // padding: EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: NavigationBar(
+        labelPadding: EdgeInsets.symmetric(vertical: 5),
+        elevation: 10,
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          final routes = [
+            AppRoutes.today,
+            AppRoutes.habits,
+            AppRoutes.focus,
+            AppRoutes.notes,
+            AppRoutes.trips,
+          ];
+          if (index != currentIndex) {
+            AppRouter.pushReplacement(context, routes[index]);
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Iconsax.home),
+            selectedIcon: Icon(Iconsax.home_1),
+            label: 'Today',
+          ),
+          NavigationDestination(
+            icon: Icon(Iconsax.task_square),
+            selectedIcon: Icon(Iconsax.task_square5),
+            label: 'Habits',
+          ),
+          NavigationDestination(
+            icon: Icon(Iconsax.chart_2),
+            selectedIcon: Icon(Iconsax.chart_21),
+            label: 'Focus',
+          ),
+          NavigationDestination(
+            icon: Icon(Iconsax.note_1),
+            selectedIcon: Icon(Iconsax.note_15),
+            label: 'Notes',
+          ),
+          NavigationDestination(
+            icon: Icon(Iconsax.map),
+            selectedIcon: Icon(Iconsax.map5),
+            label: 'Trips',
+          ),
+        ],
+      ),
     );
   }
 }

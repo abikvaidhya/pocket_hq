@@ -3,15 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../core/router/app_router.dart';
-import '../../core/widgets/matte_card.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/matte_card.dart';
 import '../../providers/dashboard_provider.dart';
 import '../bottom_nav_bar.dart';
-import 'widgets/summary_card.dart';
-import 'widgets/habits_preview_card.dart';
 import 'widgets/calendar_preview_card.dart';
 import 'widgets/focus_preview_card.dart';
+import 'widgets/habits_preview_card.dart';
 import 'widgets/notes_preview_card.dart';
+import 'widgets/summary_card.dart';
 import 'widgets/trips_preview_card.dart';
 
 class TodayPage extends ConsumerWidget {
@@ -24,58 +24,49 @@ class TodayPage extends ConsumerWidget {
     final now = DateTime.now();
 
     return Scaffold(
+      // drawer: Drawer(
+      //     child: ListView(
+      //   children: [ListTile(title: Text('Shopping Cart'))],
+      // )),
+      appBar: AppBar(
+        // leading: IconButton(
+        //   onPressed: () => Scaffold.of(context).openDrawer(),
+        //   icon: const Icon(Iconsax.menu),
+        // ),
+        title: Text(
+          _greeting(),
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+          ),
+        ),
+        actions: [
+          Material(
+            color: theme.brightness == Brightness.dark
+                ? const Color(0xFF1E2128)
+                : const Color(0xFFEEF0F4),
+            borderRadius: BorderRadius.circular(AppRadii.sm),
+            child: InkWell(
+              onTap: () => AppRouter.push(context, AppRoutes.settings),
+              borderRadius: BorderRadius.circular(AppRadii.sm),
+              child: const Padding(
+                padding: EdgeInsets.all(10),
+                child: Icon(Iconsax.setting_2, size: 20),
+              ),
+            ),
+          ),
+        ],
+      ),
+      // Text(
+      //     'Pocket HQ',
+      //     style: theme.textTheme.headlineSmall?.copyWith(
+      //       fontWeight: FontWeight.w800,
+      //       letterSpacing: -0.5,
+      //     ),,),
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            // ── Header ──────────────────────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        spacing: 5,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _greeting(),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.6),
-                            ),
-                          ),
-                          Text(
-                            'Pocket HQ',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Material(
-                      color: theme.brightness == Brightness.dark
-                          ? const Color(0xFF1E2128)
-                          : const Color(0xFFEEF0F4),
-                      borderRadius: BorderRadius.circular(AppRadii.sm),
-                      child: InkWell(
-                        onTap: () =>
-                            AppRouter.push(context, AppRoutes.settings),
-                        borderRadius: BorderRadius.circular(AppRadii.sm),
-                        child: const Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Icon(Iconsax.setting_2, size: 20),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
             // ── Date chip ───────────────────────────────────────────────────
             convertSliver(
               Padding(
@@ -168,7 +159,6 @@ class TodayPage extends ConsumerWidget {
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
 }
-
 
 // sliverToBoxAdapter (verbose in some places) helper
 Widget convertSliver(Widget child) => SliverToBoxAdapter(child: child);
