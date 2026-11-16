@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/router/app_router.dart';
 import '../../providers/dashboard_provider.dart';
@@ -11,6 +12,7 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final Future<PackageInfo> _packageInfoFuture = PackageInfo.fromPlatform();
     final themeMode = ref.watch(themeModeProvider);
     final dynamicColor = ref.watch(dynamicColorProvider);
     final theme = Theme.of(context);
@@ -114,17 +116,33 @@ class SettingsPage extends ConsumerWidget {
             height: 20,
           ),
           _SectionHeader(title: 'About'),
-          Card(
-            child: ListTile(
-              leading: const Icon(Iconsax.info_circle),
-              title: const Text('Pocket HQ'),
-              subtitle: Text(
-                'v1.0.0',
-                style: theme.textTheme.bodySmall,
-              ),
-            ),
+          FutureBuilder<PackageInfo>(
+            future: _packageInfoFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              }
+
+              if (snapshot.hasError || !snapshot.hasData) {
+                return const Text('Version info unavailable');
+              }
+
+              final info = snapshot.data!;
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Iconsax.info_circle),
+                  title: Text(info.appName),
+                  subtitle: Text(
+                    '${info.version} + ${info.buildNumber}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              );
+            },
           ),
-          const SizedBox(height: 40,),
+          const SizedBox(
+            height: 40,
+          ),
         ],
       ),
     );
