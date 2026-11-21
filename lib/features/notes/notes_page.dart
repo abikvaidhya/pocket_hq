@@ -7,9 +7,9 @@ import '../../data/models/note.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/voice_playback_provider.dart';
 import '../bottom_nav_bar.dart';
-import 'widgets/note_editor_page.dart';
 import 'widgets/voice_record_sheet.dart';
 import 'widgets/voice_waveform.dart';
+import '../../core/router/app_router.dart';
 
 class NotesPage extends ConsumerWidget {
   const NotesPage({super.key});
@@ -98,7 +98,8 @@ class NotesPage extends ConsumerWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Iconsax.microphone, color: theme.colorScheme.primary),
+                leading:
+                    Icon(Iconsax.microphone, color: theme.colorScheme.primary),
                 title: const Text('Voice note'),
                 subtitle: const Text('Record and save audio'),
                 onTap: () {
@@ -129,10 +130,10 @@ class NotesPage extends ConsumerWidget {
   }) async {
     note ??= await ref.read(notesProvider.notifier).add();
     if (!context.mounted) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => NoteEditorPage(noteId: note!.id),
-      ),
+    await AppRouter.push(
+      context,
+      AppRoutes.noteEditor,
+      arguments: {'id': note.id},
     );
   }
 
@@ -190,10 +191,29 @@ class _VoiceNoteCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final dateFmt = DateFormat('MMM d, HH:mm');
-    final playback = ref.watch(voicePlaybackProvider);
-    final isFocused = playback.noteId == note.id;
-    final isPlaying = isFocused && playback.playing;
-    final progress = isFocused ? playback.progress : 0.0;
+    final isFocused = ref.watch(
+      voicePlaybackProvider.select((p) => p.noteId == note.id),
+    );
+    final isPlaying = ref.watch(
+      voicePlaybackProvider.select(
+        (p) => p.noteId == note.id && p.playing,
+      ),
+    );
+    final progress = ref.watch(
+      voicePlaybackProvider.select(
+        (p) => p.noteId == note.id ? p.progress : 0.0,
+      ),
+    );
+    final position = ref.watch(
+      voicePlaybackProvider.select(
+        (p) => p.noteId == note.id ? p.position : Duration.zero,
+      ),
+    );
+    final duration = ref.watch(
+      voicePlaybackProvider.select(
+        (p) => p.noteId == note.id ? p.duration : Duration.zero,
+      ),
+    );
     final peaks = note.waveformPeaks ?? const <double>[];
 
     return Dismissible(
@@ -291,8 +311,8 @@ class _VoiceNoteCard extends ConsumerWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    isFocused && playback.duration.inMilliseconds > 0
-                        ? _fmt(playback.position)
+                    isFocused && duration.inMilliseconds > 0
+                        ? _fmt(position)
                         : note.formattedDuration,
                     style: theme.textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -394,13 +414,15 @@ class _TextNoteCard extends StatelessWidget {
                         size: 20,
                         color: note.isPinned
                             ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface.withValues(alpha: 0.35),
+                            : theme.colorScheme.onSurface
+                                .withValues(alpha: 0.35),
                       ),
                       visualDensity: VisualDensity.compact,
                     ),
                   ],
                 ),
-                if (note.snippet.isNotEmpty && note.title.trim().isNotEmpty) ...[
+                if (note.snippet.isNotEmpty &&
+                    note.title.trim().isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
                     note.snippet,

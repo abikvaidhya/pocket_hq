@@ -6,11 +6,24 @@ import 'package:iconsax/iconsax.dart';
 import '../../providers/focus_provider.dart';
 import '../bottom_nav_bar.dart';
 
-class FocusPage extends ConsumerWidget {
+class FocusPage extends ConsumerStatefulWidget {
   const FocusPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FocusPage> createState() => _FocusPageState();
+}
+
+class _FocusPageState extends ConsumerState<FocusPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(focusProvider.notifier).refresh();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(focusProvider);
     final theme = Theme.of(context);
 
@@ -190,7 +203,8 @@ class _UsageBarChart extends StatelessWidget {
     final theme = Theme.of(context);
     if (apps.isEmpty) return const SizedBox.shrink();
 
-    final maxMs = apps.map((a) => a.totalTimeMs).reduce((a, b) => a > b ? a : b);
+    final maxMs =
+        apps.map((a) => a.totalTimeMs).reduce((a, b) => a > b ? a : b);
     final maxY = (maxMs / 60000).ceilToDouble().clamp(1, double.infinity);
 
     return Card(
@@ -205,22 +219,29 @@ class _UsageBarChart extends StatelessWidget {
               barTouchData: BarTouchData(enabled: true),
               titlesData: FlTitlesData(
                 show: true,
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
                     getTitlesWidget: (value, meta) {
                       final i = value.toInt();
-                      if (i < 0 || i >= apps.length) return const SizedBox.shrink();
+                      if (i < 0 || i >= apps.length) {
+                        return const SizedBox.shrink();
+                      }
                       final name = apps[i].appName;
-                      final short = name.length > 8 ? '${name.substring(0, 7)}…' : name;
+                      final short =
+                          name.length > 8 ? '${name.substring(0, 7)}…' : name;
                       return Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           short,
-                          style: theme.textTheme.labelSmall?.copyWith(fontSize: 10),
+                          style: theme.textTheme.labelSmall
+                              ?.copyWith(fontSize: 10),
                         ),
                       );
                     },
@@ -237,7 +258,8 @@ class _UsageBarChart extends StatelessWidget {
                     BarChartRodData(
                       toY: mins,
                       width: 18,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(6)),
                       color: theme.colorScheme.primary.withValues(
                         alpha: 1.0 - (i * 0.1).clamp(0.0, 0.5),
                       ),

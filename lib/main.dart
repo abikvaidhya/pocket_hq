@@ -13,13 +13,12 @@ import 'data/models/reminder.dart';
 import 'data/models/shopping_cart.dart';
 import 'data/models/trip.dart';
 import 'data/models/vault_note.dart';
-import 'services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Lock orientation to portrait for dashboard feel
-  await SystemChrome.setPreferredOrientations([
+  SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
@@ -42,9 +41,6 @@ Future<void> main() async {
   await registerHiveAdapters();
   await openHiveBoxes();
 
-  // Local notifications
-  await NotificationService.instance.init();
-
   runApp(
     const ProviderScope(
       child: PocketHQApp(),
@@ -53,7 +49,6 @@ Future<void> main() async {
 }
 
 Future<void> openHiveBoxes() async {
-
   await Future.wait([
     Hive.openBox(HiveBoxes.settings),
     Hive.openBox<Habit>(HiveBoxes.habits),

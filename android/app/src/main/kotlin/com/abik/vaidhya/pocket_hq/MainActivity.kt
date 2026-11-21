@@ -3,6 +3,8 @@ package com.abik.vaidhya.pocket_hq
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.glance.appwidget.updateAll
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -53,7 +55,12 @@ class MainActivity : FlutterFragmentActivity() {
         methodChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "getTodayEvents" -> {
-                    result.success(CalendarHelper.getTodayEvents(this))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val events = CalendarHelper.getTodayEvents(this@MainActivity)
+                        Handler(Looper.getMainLooper()).post {
+                            result.success(events)
+                        }
+                    }
                 }
                 "hasUsagePermission" -> {
                     result.success(UsageStatsHelper.hasPermission(this))
@@ -63,10 +70,20 @@ class MainActivity : FlutterFragmentActivity() {
                     result.success(null)
                 }
                 "getScreenTimeToday" -> {
-                    result.success(UsageStatsHelper.getScreenTimeToday(this))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val summary = UsageStatsHelper.getScreenTimeToday(this@MainActivity)
+                        Handler(Looper.getMainLooper()).post {
+                            result.success(summary)
+                        }
+                    }
                 }
                 "getAppUsageToday" -> {
-                    result.success(UsageStatsHelper.getAppUsageToday(this))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val apps = UsageStatsHelper.getAppUsageToday(this@MainActivity)
+                        Handler(Looper.getMainLooper()).post {
+                            result.success(apps)
+                        }
+                    }
                 }
                 "authenticate" -> result.success(false)
                 "canAuthenticate" -> result.success(false)
@@ -92,13 +109,13 @@ class MainActivity : FlutterFragmentActivity() {
                 }
                 "updateHomeWidget" -> {
                     val data = call.arguments as? Map<*, *> ?: emptyMap<String, Any>()
-                    val notesJson = data["notesJson"] as? String ?: "[]"
-                    val habitsJson = data["habitsJson"] as? String ?: "[]"
-                    val appsJson = data["appsJson"] as? String ?: "[]"
-                    val screenTotal = data["screenTotal"] as? String ?: "0m"
-                    val cartJson = data["cartJson"] as? String ?: "{}"
                     WidgetDataStore.saveFromFlutter(
-                        this, notesJson, habitsJson, appsJson, screenTotal, cartJson
+                        this,
+                        data["notesJson"] as? String,
+                        data["habitsJson"] as? String,
+                        data["appsJson"] as? String,
+                        data["screenTotal"] as? String,
+                        data["cartJson"] as? String
                     )
                     // Keep legacy keys for any old UI
                     getSharedPreferences(WidgetDataStore.PREFS, Context.MODE_PRIVATE)

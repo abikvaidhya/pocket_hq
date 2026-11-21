@@ -30,7 +30,10 @@ class CustomBottomNav extends StatelessWidget {
             AppRoutes.trips,
           ];
           if (index != currentIndex) {
-            AppRouter.pushReplacement(context, routes[index]);
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              routes[index],
+              (route) => route.isFirst,
+            );
           }
         },
         destinations: const [

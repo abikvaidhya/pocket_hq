@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../data/models/vault_note.dart';
 import '../../providers/vault_provider.dart';
-import 'widgets/vault_editor_page.dart';
+import '../../core/router/app_router.dart';
 
 class VaultPage extends ConsumerStatefulWidget {
   const VaultPage({super.key});
@@ -14,7 +14,8 @@ class VaultPage extends ConsumerStatefulWidget {
   ConsumerState<VaultPage> createState() => _VaultPageState();
 }
 
-class _VaultPageState extends ConsumerState<VaultPage> with WidgetsBindingObserver {
+class _VaultPageState extends ConsumerState<VaultPage>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
@@ -65,7 +66,9 @@ class _VaultPageState extends ConsumerState<VaultPage> with WidgetsBindingObserv
             ),
         ],
       ),
-      body: vault.unlocked ? _UnlockedBody(notes: vault.notes) : const _LockGate(),
+      body: vault.unlocked
+          ? _UnlockedBody(notes: vault.notes)
+          : const _LockGate(),
       floatingActionButton: vault.unlocked
           ? FloatingActionButton.extended(
               onPressed: () => _openEditor(context),
@@ -79,10 +82,10 @@ class _VaultPageState extends ConsumerState<VaultPage> with WidgetsBindingObserv
   Future<void> _openEditor(BuildContext context, {VaultNote? note}) async {
     note ??= await ref.read(vaultProvider.notifier).add();
     if (!context.mounted) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => VaultEditorPage(noteId: note!.id),
-      ),
+    await AppRouter.push(
+      context,
+      AppRoutes.vaultEditor,
+      arguments: {'id': note.id},
     );
   }
 }
@@ -146,8 +149,9 @@ class _LockGate extends ConsumerWidget {
               if (!vault.biometricsAvailable) ...[
                 const SizedBox(height: 12),
                 TextButton(
-                  onPressed: () =>
-                      ref.read(vaultProvider.notifier).unlockWithoutBiometrics(),
+                  onPressed: () => ref
+                      .read(vaultProvider.notifier)
+                      .unlockWithoutBiometrics(),
                   child: const Text('Continue without biometrics'),
                 ),
               ],
@@ -260,10 +264,10 @@ class _UnlockedBody extends ConsumerWidget {
           child: Card(
             child: InkWell(
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => VaultEditorPage(noteId: note.id),
-                  ),
+                AppRouter.push(
+                  context,
+                  AppRoutes.vaultEditor,
+                  arguments: {'id': note.id},
                 );
               },
               borderRadius: BorderRadius.circular(18),
@@ -280,14 +284,16 @@ class _UnlockedBody extends ConsumerWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    if (note.snippet.isNotEmpty && note.title.trim().isNotEmpty) ...[
+                    if (note.snippet.isNotEmpty &&
+                        note.title.trim().isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
                         note.snippet,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.55),
                         ),
                       ),
                     ],
@@ -295,7 +301,8 @@ class _UnlockedBody extends ConsumerWidget {
                     Text(
                       dateFmt.format(note.updatedAt),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.4),
                       ),
                     ),
                   ],

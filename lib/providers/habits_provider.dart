@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants/hive_boxes.dart';
 import '../data/models/habit.dart';
 import '../services/notification_service.dart';
+import '../core/widget_sync_bus.dart';
 
 final habitsProvider =
     StateNotifierProvider<HabitsNotifier, List<Habit>>((ref) {
@@ -15,7 +16,10 @@ final activeHabitsProvider = Provider<List<Habit>>((ref) {
 });
 
 final todayCompletedCountProvider = Provider<int>((ref) {
-  return ref.watch(activeHabitsProvider).where((h) => h.isCompletedToday).length;
+  return ref
+      .watch(activeHabitsProvider)
+      .where((h) => h.isCompletedToday)
+      .length;
 });
 
 class HabitsNotifier extends StateNotifier<List<Habit>> {
@@ -34,18 +38,21 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
     await _box.put(habit.id, habit);
     _load();
     await _syncReminder(habit);
+    WidgetSyncBus.notify(WidgetSyncSection.habits);
   }
 
   Future<void> update(Habit habit) async {
     await _box.put(habit.id, habit);
     _load();
     await _syncReminder(habit);
+    WidgetSyncBus.notify(WidgetSyncSection.habits);
   }
 
   Future<void> delete(String id) async {
     await _box.delete(id);
     await NotificationService.instance.cancel(id.hashCode);
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.habits);
   }
 
   Future<void> toggleToday(String id) async {
@@ -55,6 +62,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
     habit.toggleCompletion(DateTime.now());
     await habit.save();
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.habits);
   }
 
   Future<void> toggleDate(String id, DateTime date) async {
@@ -64,6 +72,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
     habit.toggleCompletion(date);
     await habit.save();
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.habits);
   }
 
   Future<void> _syncReminder(Habit habit) async {

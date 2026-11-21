@@ -51,7 +51,9 @@ class PocketHQWidgetProvider : AppWidgetProvider() {
                 val route = intent.getStringExtra(EXTRA_ROUTE) ?: "/notes"
                 val noteId = intent.getStringExtra(EXTRA_NOTE_ID)
                 val i = Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
                     putExtra("route", route)
                     if (!noteId.isNullOrBlank()) putExtra("noteId", noteId)
                 }

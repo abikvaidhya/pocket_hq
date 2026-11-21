@@ -8,6 +8,7 @@ import '../providers/focus_provider.dart';
 import '../providers/habits_provider.dart';
 import '../providers/notes_provider.dart';
 import '../providers/carts_provider.dart';
+import '../core/widget_sync_bus.dart';
 import 'native_bridge.dart';
 
 /// Pushes Notes / Habits / Screen-time payloads to the Android Glance widget.
@@ -15,41 +16,50 @@ class WidgetSyncService {
   WidgetSyncService._();
   static final WidgetSyncService instance = WidgetSyncService._();
 
-  Future<void> sync(WidgetRef ref) async {
-    final notes = ref.read(notesProvider);
-    final habits = ref.read(activeHabitsProvider);
-    final focus = ref.read(focusProvider);
+  Future<void> sync(
+    WidgetRef ref, {
+    Set<WidgetSyncSection> sections = const {WidgetSyncSection.all},
+  }) async {
+    final syncAll = sections.contains(WidgetSyncSection.all);
+    final data = <String, dynamic>{
+      'title': 'Pocket HQ',
+      'subtitle': _todayLabel(),
+    };
 
-    final notesPayload = _notesForWidget(notes);
-    final habitsPayload = _pendingHabits(habits);
-    final appsPayload = focus.apps.take(5).map((a) {
-      return {
-        'name': a.appName,
-        'minutes': a.totalTimeMs ~/ 60000,
-      };
-    }).toList();
-    final pinnedCart = ref.read(pinnedCartProvider);
-    final cartPayload = pinnedCart == null
-        ? <String, dynamic>{}
-        : {
-            'id': pinnedCart.id,
-            'title': pinnedCart.preview,
-            'items': pinnedCart.sortedItems
-                .take(8)
-                .map((e) => {'name': e.name, 'checked': e.checked})
-                .toList(),
-          };
+    if (syncAll || sections.contains(WidgetSyncSection.notes)) {
+      final notes = ref.read(notesProvider);
+      data['notesJson'] = jsonEncode(_notesForWidget(notes));
+    }
+    if (syncAll || sections.contains(WidgetSyncSection.habits)) {
+      final habits = ref.read(activeHabitsProvider);
+      data['habitsJson'] = jsonEncode(_pendingHabits(habits));
+    }
+    if (syncAll || sections.contains(WidgetSyncSection.focus)) {
+      final focus = ref.read(focusProvider);
+      data['appsJson'] = jsonEncode(focus.apps.take(5).map((a) {
+        return {
+          'name': a.appName,
+          'minutes': a.totalTimeMs ~/ 60000,
+        };
+      }).toList());
+      data['screenTotal'] = focus.hasPermission ? focus.formatted : '—';
+    }
+    if (syncAll || sections.contains(WidgetSyncSection.carts)) {
+      final pinnedCart = ref.read(pinnedCartProvider);
+      data['cartJson'] = jsonEncode(pinnedCart == null
+          ? <String, dynamic>{}
+          : {
+              'id': pinnedCart.id,
+              'title': pinnedCart.preview,
+              'items': pinnedCart.sortedItems
+                  .take(8)
+                  .map((e) => {'name': e.name, 'checked': e.checked})
+                  .toList(),
+            });
+    }
 
     try {
-      await NativeBridge.updateHomeWidget({
-        'title': 'Pocket HQ',
-        'subtitle': _todayLabel(),
-        'notesJson': jsonEncode(notesPayload),
-        'habitsJson': jsonEncode(habitsPayload),
-        'appsJson': jsonEncode(appsPayload),
-        'screenTotal': focus.hasPermission ? focus.formatted : '—',
-        'cartJson': jsonEncode(cartPayload),
-      });
+      await NativeBridge.updateHomeWidget(data);
     } catch (_) {}
   }
 
@@ -107,8 +117,18 @@ class WidgetSyncService {
   String _todayLabel() {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     final n = DateTime.now();
     return '${days[n.weekday - 1]}, ${months[n.month - 1]} ${n.day}';

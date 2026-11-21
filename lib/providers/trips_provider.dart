@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../core/constants/hive_boxes.dart';
 import '../data/models/trip.dart';
+import '../core/widget_sync_bus.dart';
 
 class TripsState {
   final List<Trip> trips;
@@ -46,8 +47,7 @@ class TripsState {
   }
 }
 
-final tripsProvider =
-    StateNotifierProvider<TripsNotifier, TripsState>((ref) {
+final tripsProvider = StateNotifierProvider<TripsNotifier, TripsState>((ref) {
   return TripsNotifier()..load();
 });
 
@@ -55,6 +55,8 @@ class TripsNotifier extends StateNotifier<TripsState> {
   TripsNotifier() : super(const TripsState());
   final Geocoding _geocoding = Geocoding();
   StreamSubscription<Position>? _sub;
+  Timer? _persistTimer;
+  Trip? _pendingPersistTrip;
   Box<Trip> get _box => Hive.box<Trip>(HiveBoxes.trips);
 
   void load() {
@@ -89,7 +91,8 @@ class TripsNotifier extends StateNotifier<TripsState> {
 
   Future<String?> _reverseGeocode(double lat, double lng) async {
     try {
-      List<Placemark> places = await _geocoding.placemarkFromCoordinates(lat, lng);
+      List<Placemark> places =
+          await _geocoding.placemarkFromCoordinates(lat, lng);
       if (places.isEmpty) return null;
       final p = places.first;
       final parts = [
@@ -123,7 +126,8 @@ class TripsNotifier extends StateNotifier<TripsState> {
 
     final address = await _reverseGeocode(pos.latitude, pos.longitude);
     final trip = Trip(
-      title: title ?? 'Trip ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+      title: title ??
+          'Trip ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
       startedAt: DateTime.now(),
       startAddress: address,
       isActive: true,
@@ -137,7 +141,9 @@ class TripsNotifier extends StateNotifier<TripsState> {
     );
 
     await _box.put(trip.id, trip);
+    _pendingPersistTrip = trip;
     load();
+    WidgetSyncBus.notify(WidgetSyncSection.trips);
     state = state.copyWith(
       activeTrip: trip,
       tracking: true,
@@ -149,6 +155,11 @@ class TripsNotifier extends StateNotifier<TripsState> {
 
   void _listen() {
     _sub?.cancel();
+    _persistTimer?.cancel();
+    _persistTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      final trip = _pendingPersistTrip;
+      if (trip != null) unawaited(trip.save());
+    });
     _sub = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
@@ -179,10 +190,9 @@ class TripsNotifier extends StateNotifier<TripsState> {
           timestamp: DateTime.now(),
         ),
       ];
-      await trip.save();
-      load();
+      _pendingPersistTrip = trip;
       state = state.copyWith(
-        activeTrip: _box.get(trip.id),
+        activeTrip: trip,
         lastPosition: pos,
       );
     }, onError: (e) {
@@ -193,6 +203,8 @@ class TripsNotifier extends StateNotifier<TripsState> {
   Future<void> stopTrip() async {
     _sub?.cancel();
     _sub = null;
+    _persistTimer?.cancel();
+    _persistTimer = null;
 
     final trip = state.activeTrip;
     if (trip == null) {
@@ -209,7 +221,9 @@ class TripsNotifier extends StateNotifier<TripsState> {
     }
 
     await trip.save();
+    _pendingPersistTrip = null;
     load();
+    WidgetSyncBus.notify(WidgetSyncSection.trips);
     state = state.copyWith(tracking: false, clearActive: true);
   }
 
@@ -219,6 +233,7 @@ class TripsNotifier extends StateNotifier<TripsState> {
     }
     await _box.delete(id);
     load();
+    WidgetSyncBus.notify(WidgetSyncSection.trips);
   }
 
   Future<void> renameTrip(String id, String title) async {
@@ -252,6 +267,9 @@ class TripsNotifier extends StateNotifier<TripsState> {
   @override
   void dispose() {
     _sub?.cancel();
+    _persistTimer?.cancel();
+    final pending = _pendingPersistTrip;
+    if (pending != null) unawaited(pending.save());
     super.dispose();
   }
 }

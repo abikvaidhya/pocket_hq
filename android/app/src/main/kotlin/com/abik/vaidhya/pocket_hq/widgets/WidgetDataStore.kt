@@ -64,19 +64,19 @@ object WidgetDataStore {
 
     fun saveFromFlutter(
         context: Context,
-        notesJson: String,
-        habitsJson: String,
-        appsJson: String,
-        screenTotal: String,
-        cartJson: String = "{}"
+        notesJson: String?,
+        habitsJson: String?,
+        appsJson: String?,
+        screenTotal: String?,
+        cartJson: String?
     ) {
-        prefs(context).edit()
-            .putString(KEY_NOTES, notesJson)
-            .putString(KEY_HABITS, habitsJson)
-            .putString(KEY_APPS, appsJson)
-            .putString(KEY_SCREEN_TOTAL, screenTotal)
-            .putString(KEY_CART, cartJson)
-            .apply()
+        val editor = prefs(context).edit()
+        notesJson?.let { editor.putString(KEY_NOTES, it) }
+        habitsJson?.let { editor.putString(KEY_HABITS, it) }
+        appsJson?.let { editor.putString(KEY_APPS, it) }
+        screenTotal?.let { editor.putString(KEY_SCREEN_TOTAL, it) }
+        cartJson?.let { editor.putString(KEY_CART, it) }
+        editor.apply()
     }
 
     fun getNotes(context: Context): List<NoteItem> {

@@ -6,9 +6,19 @@ import '../providers/notes_provider.dart';
 import '../providers/trips_provider.dart';
 import 'digest_sync_service.dart';
 import 'widget_sync_service.dart';
+import '../core/widget_sync_bus.dart';
 
 /// Call after app start / when returning to Today.
-Future<void> syncWidgetAndDigest(WidgetRef ref) async {
+Future<void> syncWidgetAndDigest(
+  WidgetRef ref, {
+  Set<WidgetSyncSection> sections = const {WidgetSyncSection.all},
+}) async {
+  final syncAll = sections.contains(WidgetSyncSection.all);
+  final habitsChanged = syncAll || sections.contains(WidgetSyncSection.habits);
+  final notesChanged = syncAll || sections.contains(WidgetSyncSection.notes);
+  final tripsChanged = syncAll || sections.contains(WidgetSyncSection.trips);
+  final focusChanged = syncAll || sections.contains(WidgetSyncSection.focus);
+
   final habits = ref.read(activeHabitsProvider);
   final completed = habits.where((h) => h.isCompletedToday).length;
   final pending = habits.length - completed;
@@ -21,14 +31,22 @@ Future<void> syncWidgetAndDigest(WidgetRef ref) async {
   }).length;
   final screen = ref.read(focusProvider).formatted;
 
-  await DigestSyncService.instance.sync(
-    habitsPending: pending,
-    habitsTotal: habits.length,
-    notesCount: notes,
-    tripsToday: tripsToday,
-    screenTimeFormatted: screen,
-  );
+  if (syncAll ||
+      habitsChanged ||
+      notesChanged ||
+      tripsChanged ||
+      focusChanged) {
+    await DigestSyncService.instance.sync(
+      habitsPending: pending,
+      habitsTotal: habits.length,
+      notesCount: notes,
+      tripsToday: tripsToday,
+      screenTimeFormatted: screen,
+    );
+  }
 
-  await WidgetSyncService.instance.applyWidgetHabitCompletions(ref);
-  await WidgetSyncService.instance.sync(ref);
+  if (habitsChanged || syncAll) {
+    await WidgetSyncService.instance.applyWidgetHabitCompletions(ref);
+  }
+  await WidgetSyncService.instance.sync(ref, sections: sections);
 }

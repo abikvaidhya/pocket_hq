@@ -30,8 +30,10 @@ class CalendarEvent {
   factory CalendarEvent.fromMap(Map<String, dynamic> m) {
     return CalendarEvent(
       title: m['title'] as String? ?? 'Event',
-      begin: DateTime.fromMillisecondsSinceEpoch((m['begin'] as num?)?.toInt() ?? 0),
-      end: DateTime.fromMillisecondsSinceEpoch((m['end'] as num?)?.toInt() ?? 0),
+      begin: DateTime.fromMillisecondsSinceEpoch(
+          (m['begin'] as num?)?.toInt() ?? 0),
+      end:
+          DateTime.fromMillisecondsSinceEpoch((m['end'] as num?)?.toInt() ?? 0),
       location: m['location'] as String?,
       allDay: m['allDay'] as bool? ?? false,
       calendar: m['calendar'] as String?,
@@ -69,7 +71,7 @@ class CalendarState {
 
 final calendarProvider =
     StateNotifierProvider<CalendarNotifier, CalendarState>((ref) {
-  return CalendarNotifier()..refresh();
+  return CalendarNotifier();
 });
 
 class CalendarNotifier extends StateNotifier<CalendarState> {
@@ -78,10 +80,14 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
   Future<void> refresh() async {
     state = state.copyWith(loading: true, error: null);
     try {
-      final status = await Permission.calendarFullAccess.request();
-      final ok = status.isGranted ||
-          await Permission.calendarWriteOnly.request().isGranted ||
-          (await Permission.calendarFullAccess.status).isGranted;
+      var status = await Permission.calendarFullAccess.status;
+      if (!status.isGranted) {
+        status = await Permission.calendarFullAccess.request();
+      }
+      var ok = status.isGranted;
+      if (!ok) {
+        ok = (await Permission.calendarWriteOnly.request()).isGranted;
+      }
 
       final raw = await NativeBridge.getTodayEvents();
       final events = raw.map(CalendarEvent.fromMap).toList()

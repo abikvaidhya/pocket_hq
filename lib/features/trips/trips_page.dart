@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../../data/models/trip.dart';
 import '../../providers/trips_provider.dart';
 import '../bottom_nav_bar.dart';
-import 'widgets/trip_detail_page.dart';
+import '../../core/router/app_router.dart';
 
 class TripsPage extends ConsumerWidget {
   final String? initialTripId;
@@ -90,8 +90,10 @@ class TripsPage extends ConsumerWidget {
   }
 
   void _openDetail(BuildContext context, Trip trip) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => TripDetailPage(tripId: trip.id)),
+    AppRouter.push(
+      context,
+      AppRoutes.tripDetail,
+      arguments: {'id': trip.id},
     );
   }
 
@@ -170,7 +172,8 @@ class _ActiveTripBanner extends StatelessWidget {
                     Text(
                       '${trip.formattedDistance} · ${trip.formattedDuration}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.55),
                       ),
                     ),
                   ],
@@ -239,7 +242,8 @@ class _TripCard extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(

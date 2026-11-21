@@ -29,26 +29,5 @@ class DigestSyncService {
         summary: summary.toString(),
       );
     } catch (_) {}
-
-    try {
-      await NativeBridge.updateHomeWidget({
-        'title': 'Pocket HQ',
-        'subtitle': _todayLabel(),
-        'habits': habitsTotal == 0
-            ? '—'
-            : '${habitsTotal - habitsPending}/$habitsTotal done',
-        'screen': screenTimeFormatted,
-      });
-    } catch (_) {}
-  }
-
-  String _todayLabel() {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    final n = DateTime.now();
-    return '${days[n.weekday - 1]}, ${months[n.month - 1]} ${n.day}';
   }
 }

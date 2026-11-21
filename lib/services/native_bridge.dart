@@ -5,14 +5,29 @@ import '../core/constants/app_constants.dart';
 class NativeBridge {
   NativeBridge._();
 
-  static const MethodChannel _channel = MethodChannel(AppConstants.methodChannel);
+  static const MethodChannel _channel =
+      MethodChannel(AppConstants.methodChannel);
   static const EventChannel _events = EventChannel(AppConstants.eventChannel);
+  static Future<void> Function()? _deepLinkHandler;
+
+  static void setDeepLinkHandler(Future<void> Function() handler) {
+    _deepLinkHandler = handler;
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'onDeepLink') {
+        await _deepLinkHandler?.call();
+      }
+      return null;
+    });
+  }
 
   // Calendar
   static Future<List<Map<String, dynamic>>> getTodayEvents() async {
     try {
-      final result = await _channel.invokeMethod<List<dynamic>>('getTodayEvents');
-      return (result ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      final result =
+          await _channel.invokeMethod<List<dynamic>>('getTodayEvents');
+      return (result ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
     } on PlatformException catch (e) {
       throw NativeBridgeException('getTodayEvents failed: ${e.message}');
     }
@@ -32,7 +47,8 @@ class NativeBridge {
     try {
       await _channel.invokeMethod('openUsageAccessSettings');
     } on PlatformException catch (e) {
-      throw NativeBridgeException('openUsageAccessSettings failed: ${e.message}');
+      throw NativeBridgeException(
+          'openUsageAccessSettings failed: ${e.message}');
     }
   }
 
@@ -47,8 +63,11 @@ class NativeBridge {
 
   static Future<List<Map<String, dynamic>>> getAppUsageToday() async {
     try {
-      final result = await _channel.invokeMethod<List<dynamic>>('getAppUsageToday');
-      return (result ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      final result =
+          await _channel.invokeMethod<List<dynamic>>('getAppUsageToday');
+      return (result ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
     } on PlatformException catch (e) {
       throw NativeBridgeException('getAppUsageToday failed: ${e.message}');
     }
@@ -76,7 +95,8 @@ class NativeBridge {
   }
 
   // WorkManager / Daily Digest
-  static Future<void> scheduleDailyDigest({required int hour, required int minute}) async {
+  static Future<void> scheduleDailyDigest(
+      {required int hour, required int minute}) async {
     try {
       await _channel.invokeMethod('scheduleDailyDigest', {
         'hour': hour,
@@ -114,11 +134,10 @@ class NativeBridge {
     }
   }
 
-
   static Future<List<String>> drainWidgetHabitCompletions() async {
     try {
-      final result =
-          await _channel.invokeMethod<List<dynamic>>('drainWidgetHabitCompletions');
+      final result = await _channel
+          .invokeMethod<List<dynamic>>('drainWidgetHabitCompletions');
       return (result ?? []).map((e) => e.toString()).toList();
     } on PlatformException {
       return [];

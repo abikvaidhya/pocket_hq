@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../core/constants/hive_boxes.dart';
 import '../data/models/note.dart';
 import '../services/voice_note_service.dart';
+import '../core/widget_sync_bus.dart';
 
 final notesProvider = StateNotifierProvider<NotesNotifier, List<Note>>((ref) {
   return NotesNotifier();
@@ -33,6 +34,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     final note = Note(title: title, body: body);
     await _box.put(note.id, note);
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.notes);
     return note;
   }
 
@@ -51,6 +53,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     );
     await _box.put(note.id, note);
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.notes);
     return note;
   }
 
@@ -58,6 +61,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     note.updatedAt = DateTime.now();
     await _box.put(note.id, note);
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.notes);
   }
 
   Future<void> delete(String id) async {
@@ -67,6 +71,7 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     }
     await _box.delete(id);
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.notes);
   }
 
   Future<void> togglePin(String id) async {
@@ -76,6 +81,8 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     note.updatedAt = DateTime.now();
     await note.save();
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.notes);
+    WidgetSyncBus.notify(WidgetSyncSection.notes);
   }
 
   Future<void> rename(String id, String title) async {

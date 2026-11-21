@@ -9,6 +9,9 @@ import '../../features/trips/trips_page.dart';
 import '../../features/settings/settings_page.dart';
 import '../../features/carts/carts_page.dart';
 import '../../features/reminders/reminders_page.dart';
+import '../../features/notes/widgets/note_editor_page.dart';
+import '../../features/carts/cart_detail_page.dart';
+import '../../features/vault/widgets/vault_editor_page.dart';
 
 class AppRoutes {
   static const String today = '/today';
@@ -23,6 +26,8 @@ class AppRoutes {
   static const String habitDetail = '/habits/detail';
   static const String noteEditor = '/notes/editor';
   static const String tripDetail = '/trips/detail';
+  static const String cartDetail = '/carts/detail';
+  static const String vaultEditor = '/vault/editor';
 }
 
 class AppRouter {
@@ -53,10 +58,23 @@ class AppRouter {
         final id = (args is Map) ? args['id'] as String? : null;
         return _buildRoute(HabitsPage(initialHabitId: id), settings);
       case AppRoutes.noteEditor:
-        return _buildRoute(const NotesPage(), settings);
+        final id = (args is Map) ? args['id'] as String? : null;
+        return id == null
+            ? _buildRoute(const NotesPage(), settings)
+            : _buildRoute(NoteEditorPage(noteId: id), settings);
       case AppRoutes.tripDetail:
         final id = (args is Map) ? args['id'] as String? : null;
         return _buildRoute(TripsPage(initialTripId: id), settings);
+      case AppRoutes.cartDetail:
+        final id = (args is Map) ? args['id'] as String? : null;
+        return id == null
+            ? _buildRoute(const CartsPage(), settings)
+            : _buildRoute(CartDetailPage(cartId: id), settings);
+      case AppRoutes.vaultEditor:
+        final id = (args is Map) ? args['id'] as String? : null;
+        return id == null
+            ? _buildRoute(const VaultPage(), settings)
+            : _buildRoute(VaultEditorPage(noteId: id), settings);
       default:
         return _buildRoute(const TodayPage(), settings);
     }
@@ -84,17 +102,19 @@ class AppRouter {
           ),
         );
       },
-      transitionDuration: const Duration(milliseconds: 300),
-      reverseTransitionDuration: const Duration(milliseconds: 240),
+      transitionDuration: const Duration(milliseconds: 220),
+      reverseTransitionDuration: const Duration(milliseconds: 180),
     );
   }
 
   /// Helper for typed navigation
-  static Future<T?> push<T>(BuildContext context, String route, {Object? arguments}) {
+  static Future<T?> push<T>(BuildContext context, String route,
+      {Object? arguments}) {
     return Navigator.of(context).pushNamed<T>(route, arguments: arguments);
   }
 
-  static void pushReplacement(BuildContext context, String route, {Object? arguments}) {
+  static void pushReplacement(BuildContext context, String route,
+      {Object? arguments}) {
     Navigator.of(context).pushReplacementNamed(route, arguments: arguments);
   }
 

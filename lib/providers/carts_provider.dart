@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../core/constants/hive_boxes.dart';
 import '../data/models/shopping_cart.dart';
+import '../core/widget_sync_bus.dart';
 
 final cartsProvider =
     StateNotifierProvider<CartsNotifier, List<ShoppingCart>>((ref) {
@@ -41,6 +42,7 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     final cart = ShoppingCart(title: title, purpose: purpose);
     await _box.put(cart.id, cart);
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
     return cart;
   }
 
@@ -48,11 +50,13 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     cart.updatedAt = DateTime.now();
     await _box.put(cart.id, cart);
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
   Future<void> delete(String id) async {
     await _box.delete(id);
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
   /// Only one cart may be pinned. Pinning this one unpins others.
@@ -66,6 +70,7 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
       }
     }
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
   Future<void> togglePin(String id) async {
@@ -80,6 +85,7 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
       return;
     }
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
   Future<void> addItem(String cartId, String name) async {
@@ -91,6 +97,7 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     cart.updatedAt = DateTime.now();
     await cart.save();
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
   Future<void> toggleItem(String cartId, String itemId) async {
@@ -111,6 +118,7 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     cart.updatedAt = DateTime.now();
     await cart.save();
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
   Future<void> renameItem(String cartId, String itemId, String name) async {
@@ -132,6 +140,7 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     cart.updatedAt = DateTime.now();
     await cart.save();
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
   Future<void> removeItem(String cartId, String itemId) async {
@@ -141,9 +150,11 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     cart.updatedAt = DateTime.now();
     await cart.save();
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
-  Future<void> renameCart(String cartId, {String? title, String? purpose}) async {
+  Future<void> renameCart(String cartId,
+      {String? title, String? purpose}) async {
     final cart = _box.get(cartId);
     if (cart == null) return;
     if (title != null) cart.title = title.trim();
@@ -151,6 +162,7 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     cart.updatedAt = DateTime.now();
     await cart.save();
     _load();
+    WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
   ShoppingCart? getById(String id) => _box.get(id);

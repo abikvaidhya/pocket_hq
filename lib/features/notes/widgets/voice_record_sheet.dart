@@ -17,6 +17,85 @@ class VoiceRecordSheet extends ConsumerStatefulWidget {
 
 enum _Phase { record, name }
 
+class _RecordingStatus extends StatefulWidget {
+  final bool recording;
+  final ThemeData theme;
+
+  const _RecordingStatus({
+    required this.recording,
+    required this.theme,
+  });
+
+  @override
+  State<_RecordingStatus> createState() => _RecordingStatusState();
+}
+
+class _RecordingStatusState extends State<_RecordingStatus> {
+  Timer? _timer;
+  Duration _elapsed = Duration.zero;
+  List<double> _peaks = const [];
+
+  @override
+  void didUpdateWidget(covariant _RecordingStatus oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.recording == oldWidget.recording) return;
+    if (widget.recording) {
+      _elapsed = Duration.zero;
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+        if (!mounted) return;
+        setState(() {
+          _elapsed = VoiceNoteService.instance.elapsed;
+          _peaks = List<double>.from(VoiceNoteService.instance.peaks);
+        });
+      });
+    } else {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final m = _elapsed.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = _elapsed.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        VoiceWaveform(
+          peaks: _peaks,
+          progress: widget.recording ? 1 : 0,
+          height: 56,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          '$m:$s',
+          style: widget.theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          widget.recording
+              ? 'Listening… tap stop when done'
+              : 'Tap to start recording',
+          style: widget.theme.textTheme.bodyMedium?.copyWith(
+            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _VoiceRecordSheetState extends ConsumerState<VoiceRecordSheet> {
   _Phase _phase = _Phase.record;
   bool _recording = false;
@@ -24,8 +103,6 @@ class _VoiceRecordSheetState extends ConsumerState<VoiceRecordSheet> {
   String? _path;
   int _durationMs = 0;
   List<double> _peaks = [];
-  Timer? _tick;
-  Duration _elapsed = Duration.zero;
 
   final _nameCtrl = TextEditingController();
   String? _suggestion;
@@ -33,7 +110,6 @@ class _VoiceRecordSheetState extends ConsumerState<VoiceRecordSheet> {
 
   @override
   void dispose() {
-    _tick?.cancel();
     _nameCtrl.dispose();
     if (_recording) {
       VoiceNoteService.instance.cancelRecording();
@@ -56,21 +132,11 @@ class _VoiceRecordSheetState extends ConsumerState<VoiceRecordSheet> {
         }
         return;
       }
-      _tick?.cancel();
-      _tick = Timer.periodic(const Duration(milliseconds: 200), (_) {
-        if (!mounted) return;
-        setState(() {
-          _elapsed = VoiceNoteService.instance.elapsed;
-          _peaks = List.from(VoiceNoteService.instance.peaks);
-        });
-      });
       setState(() {
         _recording = true;
         _busy = false;
-        _elapsed = Duration.zero;
       });
     } else {
-      _tick?.cancel();
       final result = await VoiceNoteService.instance.stopRecording();
       setState(() {
         _recording = false;
@@ -141,12 +207,6 @@ class _VoiceRecordSheetState extends ConsumerState<VoiceRecordSheet> {
     if (mounted) Navigator.pop(context);
   }
 
-  String _fmt(Duration d) {
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$m:$s';
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -189,31 +249,7 @@ class _VoiceRecordSheetState extends ConsumerState<VoiceRecordSheet> {
 
   List<Widget> _recordPhase(ThemeData theme) {
     return [
-      VoiceWaveform(
-        peaks: _peaks,
-        progress: _recording ? 1 : 0,
-        height: 56,
-      ),
-      const SizedBox(height: 16),
-      Center(
-        child: Text(
-          _fmt(_elapsed),
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ),
-      const SizedBox(height: 8),
-      Center(
-        child: Text(
-          _recording ? 'Listening… tap stop when done' : 'Tap to start recording',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-          ),
-        ),
-      ),
+      _RecordingStatus(recording: _recording, theme: theme),
       const SizedBox(height: 28),
       Row(
         children: [

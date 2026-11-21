@@ -5,8 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../data/models/shopping_cart.dart';
 import '../../providers/carts_provider.dart';
-import '../../services/widget_sync_service.dart';
-import 'cart_detail_page.dart';
+import '../../core/router/app_router.dart';
 
 class CartsPage extends ConsumerWidget {
   const CartsPage({super.key});
@@ -40,7 +39,6 @@ class CartsPage extends ConsumerWidget {
                   onOpen: () => _openCart(context, ref, cart),
                   onPin: () async {
                     await ref.read(cartsProvider.notifier).togglePin(cart.id);
-                    await WidgetSyncService.instance.sync(ref);
                   },
                   onDelete: () => _confirmDelete(context, ref, cart),
                 );
@@ -112,11 +110,11 @@ class CartsPage extends ConsumerWidget {
     WidgetRef ref,
     ShoppingCart cart,
   ) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => CartDetailPage(cartId: cart.id)),
+    await AppRouter.push(
+      context,
+      AppRoutes.cartDetail,
+      arguments: {'id': cart.id},
     );
-    // Auto-saved in detail page; refresh widget when returning
-    await WidgetSyncService.instance.sync(ref);
   }
 
   Future<void> _confirmDelete(
@@ -146,7 +144,6 @@ class CartsPage extends ConsumerWidget {
     );
     if (ok == true) {
       await ref.read(cartsProvider.notifier).delete(cart.id);
-      await WidgetSyncService.instance.sync(ref);
     }
   }
 }
@@ -242,7 +239,8 @@ class _CartCard extends StatelessWidget {
                   Text(
                     cart.purpose,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.55),
                     ),
                   ),
                 ],
@@ -260,8 +258,8 @@ class _CartCard extends StatelessWidget {
                     Text(
                       dateFmt.format(cart.updatedAt),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.4),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.4),
                       ),
                     ),
                   ],

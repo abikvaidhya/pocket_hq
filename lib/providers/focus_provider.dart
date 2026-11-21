@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/native_bridge.dart';
+import '../core/widget_sync_bus.dart';
 
 class AppUsageItem {
   final String packageName;
@@ -24,7 +25,8 @@ class AppUsageItem {
   factory AppUsageItem.fromMap(Map<String, dynamic> m) {
     return AppUsageItem(
       packageName: m['packageName'] as String? ?? '',
-      appName: m['appName'] as String? ?? m['packageName'] as String? ?? 'Unknown',
+      appName:
+          m['appName'] as String? ?? m['packageName'] as String? ?? 'Unknown',
       totalTimeMs: (m['totalTimeMs'] as num?)?.toInt() ?? 0,
     );
   }
@@ -66,9 +68,8 @@ class FocusState {
   }
 }
 
-final focusProvider =
-    StateNotifierProvider<FocusNotifier, FocusState>((ref) {
-  return FocusNotifier()..refresh();
+final focusProvider = StateNotifierProvider<FocusNotifier, FocusState>((ref) {
+  return FocusNotifier();
 });
 
 class FocusNotifier extends StateNotifier<FocusState> {
@@ -88,11 +89,14 @@ class FocusNotifier extends StateNotifier<FocusState> {
           formatted: '0h 0m',
           apps: [],
         );
+        WidgetSyncBus.notify(WidgetSyncSection.focus);
         return;
       }
 
-      final summary = await NativeBridge.getScreenTimeToday(); // fetch screen time summary
-      final rawApps = await NativeBridge.getAppUsageToday(); // fetch app usage data
+      final summary =
+          await NativeBridge.getScreenTimeToday(); // fetch screen time summary
+      final rawApps =
+          await NativeBridge.getAppUsageToday(); // fetch app usage data
 
       final apps = rawApps
           .map(AppUsageItem.fromMap)
@@ -107,6 +111,7 @@ class FocusNotifier extends StateNotifier<FocusState> {
         formatted: summary['formatted'] as String? ?? '0h 0m',
         apps: apps.take(15).toList(),
       );
+      WidgetSyncBus.notify(WidgetSyncSection.focus);
     } catch (e) {
       state = state.copyWith(
         loading: false,
