@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:timezone/data/latest.dart' as tz;
 
 import 'app.dart';
 import 'core/constants/hive_boxes.dart';
@@ -33,9 +32,6 @@ Future<void> main() async {
     ),
   );
 
-  // Timezone for notifications
-  tz.initializeTimeZones();
-
   // Hive
   await Hive.initFlutter();
   await registerHiveAdapters();
@@ -60,4 +56,43 @@ Future<void> openHiveBoxes() async {
     Hive.openBox<ShoppingCart>(HiveBoxes.shoppingCarts),
     Hive.openBox<Reminder>(HiveBoxes.reminders),
   ]);
+  await _ensureSingleShoppingCart();
+}
+
+Future<void> _ensureSingleShoppingCart() async {
+  final box = Hive.box<ShoppingCart>(HiveBoxes.shoppingCarts);
+  final carts = box.values.toList()
+    ..sort((a, b) {
+      if (a.isPinned != b.isPinned) return a.isPinned ? -1 : 1;
+      return a.createdAt.compareTo(b.createdAt);
+    });
+
+  if (carts.isEmpty) {
+    final cart = ShoppingCart(title: 'To Get', isPinned: true);
+    await box.put(cart.id, cart);
+    return;
+  }
+
+  final cart = carts.first;
+  if (carts.length == 1 &&
+      cart.title == 'To Get' &&
+      cart.purpose.isEmpty &&
+      cart.isPinned) {
+    return;
+  }
+
+  cart.title = 'To Get';
+  cart.purpose = '';
+  cart.isPinned = true;
+  if (carts.length > 1) {
+    cart.items = [
+      ...cart.items,
+      ...carts.skip(1).expand((other) => other.items)
+    ];
+  }
+  cart.updatedAt = DateTime.now();
+  await box.put(cart.id, cart);
+  for (final other in carts.skip(1)) {
+    await box.delete(other.id);
+  }
 }

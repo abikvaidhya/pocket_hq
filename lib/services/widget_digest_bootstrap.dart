@@ -18,6 +18,7 @@ Future<void> syncWidgetAndDigest(
   final notesChanged = syncAll || sections.contains(WidgetSyncSection.notes);
   final tripsChanged = syncAll || sections.contains(WidgetSyncSection.trips);
   final focusChanged = syncAll || sections.contains(WidgetSyncSection.focus);
+  final cartsChanged = syncAll || sections.contains(WidgetSyncSection.carts);
 
   final habits = ref.read(activeHabitsProvider);
   final completed = habits.where((h) => h.isCompletedToday).length;
@@ -45,8 +46,8 @@ Future<void> syncWidgetAndDigest(
     );
   }
 
-  if (habitsChanged || syncAll) {
-    await WidgetSyncService.instance.applyWidgetHabitCompletions(ref);
+  if (cartsChanged) {
+    await WidgetSyncService.instance.applyWidgetCartChecks(ref);
   }
   await WidgetSyncService.instance.sync(ref, sections: sections);
 }

@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 
 import '../../data/models/trip.dart';
 import '../../providers/trips_provider.dart';
-import '../bottom_nav_bar.dart';
 import '../../core/router/app_router.dart';
 
 class TripsPage extends ConsumerWidget {
@@ -27,14 +26,11 @@ class TripsPage extends ConsumerWidget {
           if (state.activeTrip != null)
             _ActiveTripBanner(
               trip: state.activeTrip!,
-              onStop: () => ref.read(tripsProvider.notifier).stopTrip(),
               onOpen: () => _openDetail(context, state.activeTrip!),
             ),
           Expanded(
             child: trips.isEmpty
-                ? _EmptyState(
-                    onStart: () => ref.read(tripsProvider.notifier).startTrip(),
-                  )
+                ? const _EmptyState()
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                     physics: const BouncingScrollPhysics(),
@@ -67,7 +63,7 @@ class TripsPage extends ConsumerWidget {
               onPressed: state.loading
                   ? null
                   : () => ref.read(tripsProvider.notifier).stopTrip(),
-              icon: const Icon(Iconsax.stop),
+              icon: const Icon(Icons.stop),
               label: const Text('Stop trip'),
               backgroundColor: theme.colorScheme.error,
               foregroundColor: theme.colorScheme.onError,
@@ -82,10 +78,9 @@ class TripsPage extends ConsumerWidget {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Iconsax.play),
+                  : const Icon(Icons.play_arrow),
               label: Text(state.loading ? 'Starting…' : 'Start trip'),
             ),
-      bottomNavigationBar: const CustomBottomNav(currentIndex: 4),
     );
   }
 
@@ -130,12 +125,10 @@ class TripsPage extends ConsumerWidget {
 
 class _ActiveTripBanner extends StatelessWidget {
   final Trip trip;
-  final VoidCallback onStop;
   final VoidCallback onOpen;
 
   const _ActiveTripBanner({
     required this.trip,
-    required this.onStop,
     required this.onOpen,
   });
 
@@ -178,10 +171,6 @@ class _ActiveTripBanner extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              TextButton(
-                onPressed: onStop,
-                child: const Text('Stop'),
               ),
             ],
           ),
@@ -299,8 +288,7 @@ class _TripCard extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  final VoidCallback onStart;
-  const _EmptyState({required this.onStart});
+  const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -330,12 +318,6 @@ class _EmptyState extends StatelessWidget {
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
               ),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onStart,
-              icon: const Icon(Iconsax.play),
-              label: const Text('Start trip'),
             ),
           ],
         ),

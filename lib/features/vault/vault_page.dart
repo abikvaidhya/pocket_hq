@@ -45,7 +45,7 @@ class _VaultPageState extends ConsumerState<VaultPage>
       appBar: AppBar(
         title: const Text('Vault'),
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             ref.read(vaultProvider.notifier).lock();
             Navigator.of(context).pop();
@@ -55,13 +55,13 @@ class _VaultPageState extends ConsumerState<VaultPage>
           if (vault.unlocked)
             IconButton(
               onPressed: () => ref.read(vaultProvider.notifier).lock(),
-              icon: const Icon(Iconsax.lock),
+              icon: const Icon(Icons.lock_outline),
               tooltip: 'Lock',
             ),
           if (vault.unlocked)
             IconButton(
               onPressed: () => _openEditor(context),
-              icon: const Icon(Iconsax.add),
+              icon: const Icon(Icons.add),
               tooltip: 'New entry',
             ),
         ],

@@ -23,44 +23,36 @@ class CustomBottomNav extends StatelessWidget {
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           final routes = [
-            AppRoutes.today,
             AppRoutes.habits,
-            AppRoutes.focus,
+            AppRoutes.today,
             AppRoutes.notes,
-            AppRoutes.trips,
           ];
           if (index != currentIndex) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              routes[index],
-              (route) => route.isFirst,
-            );
+            if (routes[index] == AppRoutes.today) {
+              AppRouter.goHome(context);
+            } else {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                routes[index],
+                (route) => route.isFirst,
+              );
+            }
           }
         },
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Iconsax.home),
-            selectedIcon: Icon(Iconsax.home_1),
-            label: 'Today',
-          ),
           NavigationDestination(
             icon: Icon(Iconsax.task_square),
             selectedIcon: Icon(Iconsax.task_square5),
             label: 'Habits',
           ),
           NavigationDestination(
-            icon: Icon(Iconsax.chart_2),
-            selectedIcon: Icon(Iconsax.chart_21),
-            label: 'Focus',
+            icon: Icon(Iconsax.home),
+            selectedIcon: Icon(Iconsax.home_1),
+            label: 'Home',
           ),
           NavigationDestination(
             icon: Icon(Iconsax.note_1),
             selectedIcon: Icon(Iconsax.note_15),
             label: 'Notes',
-          ),
-          NavigationDestination(
-            icon: Icon(Iconsax.map),
-            selectedIcon: Icon(Iconsax.map5),
-            label: 'Trips',
           ),
         ],
       ),

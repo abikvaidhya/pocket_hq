@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../providers/focus_provider.dart';
-import '../bottom_nav_bar.dart';
 
 class FocusPage extends ConsumerStatefulWidget {
   const FocusPage({super.key});
@@ -33,7 +32,7 @@ class _FocusPageState extends ConsumerState<FocusPage> {
         actions: [
           IconButton(
             onPressed: () => ref.read(focusProvider.notifier).refresh(),
-            icon: const Icon(Iconsax.refresh),
+            icon: const Icon(Icons.refresh),
             tooltip: 'Refresh',
           ),
         ],
@@ -95,7 +94,6 @@ class _FocusPageState extends ConsumerState<FocusPage> {
                     ],
                   ),
                 ),
-      bottomNavigationBar: const CustomBottomNav(currentIndex: 2),
     );
   }
 }

@@ -6,75 +6,35 @@ import org.json.JSONObject
 
 object WidgetDataStore {
     const val PREFS = "pocket_hq_widget"
-    private const val KEY_PAGE = "page"
     private const val KEY_NOTES = "notes_json"
-    private const val KEY_HABITS = "habits_json"
-    private const val KEY_APPS = "apps_json"
-    private const val KEY_SCREEN_TOTAL = "screen_total"
     private const val KEY_CART = "cart_json"
-    private const val KEY_COMPLETED_QUEUE = "habit_completed_queue"
-    private const val PAGE_COUNT = 4
+    private const val KEY_CART_CHECK_QUEUE = "cart_checked_queue"
 
     fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-
-    fun getPage(context: Context): Int =
-        prefs(context).getInt(KEY_PAGE, 0).coerceIn(0, PAGE_COUNT - 1)
-
-    fun setPage(context: Context, page: Int) {
-        prefs(context).edit().putInt(KEY_PAGE, page.coerceIn(0, PAGE_COUNT - 1)).apply()
-    }
-
-    fun cyclePage(context: Context, delta: Int): Int {
-        val next = (getPage(context) + delta + PAGE_COUNT) % PAGE_COUNT
-        setPage(context, next)
-        return next
-    }
 
     data class NoteItem(
         val id: String,
         val title: String,
         val isVoice: Boolean,
         val audioPath: String?,
-        val isPinned: Boolean,
-        val durationLabel: String
-    )
-
-    data class HabitItem(
-        val id: String,
-        val title: String,
-        val colorArgb: Long
-    )
-
-    data class AppItem(
-        val name: String,
-        val minutes: Int
+        val isPinned: Boolean
     )
 
     data class CartItemRow(
+        val id: String,
         val name: String,
         val checked: Boolean
     )
 
     data class CartPayload(
         val id: String?,
-        val title: String?,
         val items: List<CartItemRow>
     )
 
-    fun saveFromFlutter(
-        context: Context,
-        notesJson: String?,
-        habitsJson: String?,
-        appsJson: String?,
-        screenTotal: String?,
-        cartJson: String?
-    ) {
+    fun saveFromFlutter(context: Context, notesJson: String?, cartJson: String?) {
         val editor = prefs(context).edit()
         notesJson?.let { editor.putString(KEY_NOTES, it) }
-        habitsJson?.let { editor.putString(KEY_HABITS, it) }
-        appsJson?.let { editor.putString(KEY_APPS, it) }
-        screenTotal?.let { editor.putString(KEY_SCREEN_TOTAL, it) }
         cartJson?.let { editor.putString(KEY_CART, it) }
         editor.apply()
     }
@@ -82,18 +42,18 @@ object WidgetDataStore {
     fun getNotes(context: Context): List<NoteItem> {
         val raw = prefs(context).getString(KEY_NOTES, "[]") ?: "[]"
         return try {
-            val arr = JSONArray(raw)
+            val array = JSONArray(raw)
             buildList {
-                for (i in 0 until arr.length()) {
-                    val o = arr.getJSONObject(i)
+                for (index in 0 until array.length()) {
+                    val note = array.getJSONObject(index)
                     add(
                         NoteItem(
-                            id = o.optString("id"),
-                            title = o.optString("title", "Note"),
-                            isVoice = o.optBoolean("isVoice", false),
-                            audioPath = o.optString("audioPath", null).takeIf { !it.isNullOrBlank() },
-                            isPinned = o.optBoolean("isPinned", false),
-                            durationLabel = o.optString("durationLabel", "")
+                            id = note.optString("id"),
+                            title = note.optString("title", "Note"),
+                            isVoice = note.optBoolean("isVoice", false),
+                            audioPath = note.optString("audioPath", null)
+                                .takeIf { !it.isNullOrBlank() },
+                            isPinned = note.optBoolean("isPinned", false)
                         )
                     )
                 }
@@ -102,112 +62,77 @@ object WidgetDataStore {
             emptyList()
         }
     }
-
-    fun getHabits(context: Context): List<HabitItem> {
-        val raw = prefs(context).getString(KEY_HABITS, "[]") ?: "[]"
-        return try {
-            val arr = JSONArray(raw)
-            buildList {
-                for (i in 0 until arr.length()) {
-                    val o = arr.getJSONObject(i)
-                    add(
-                        HabitItem(
-                            id = o.optString("id"),
-                            title = o.optString("title", "Habit"),
-                            colorArgb = o.optLong("color", 0xFF5B6CFF)
-                        )
-                    )
-                }
-            }
-        } catch (_: Exception) {
-            emptyList()
-        }
-    }
-
-    fun getApps(context: Context): List<AppItem> {
-        val raw = prefs(context).getString(KEY_APPS, "[]") ?: "[]"
-        return try {
-            val arr = JSONArray(raw)
-            buildList {
-                for (i in 0 until arr.length()) {
-                    val o = arr.getJSONObject(i)
-                    add(
-                        AppItem(
-                            name = o.optString("name", "App"),
-                            minutes = o.optInt("minutes", 0)
-                        )
-                    )
-                }
-            }
-        } catch (_: Exception) {
-            emptyList()
-        }
-    }
-
-    fun getScreenTotal(context: Context): String =
-        prefs(context).getString(KEY_SCREEN_TOTAL, "0m") ?: "0m"
 
     fun getCart(context: Context): CartPayload {
         val raw = prefs(context).getString(KEY_CART, "{}") ?: "{}"
         return try {
-            val o = JSONObject(raw)
-            val itemsArr = o.optJSONArray("items") ?: JSONArray()
+            val cart = JSONObject(raw)
+            val itemArray = cart.optJSONArray("items") ?: JSONArray()
             val items = buildList {
-                for (i in 0 until itemsArr.length()) {
-                    val it = itemsArr.getJSONObject(i)
+                for (index in 0 until itemArray.length()) {
+                    val item = itemArray.getJSONObject(index)
                     add(
                         CartItemRow(
-                            name = it.optString("name", "Item"),
-                            checked = it.optBoolean("checked", false)
+                            id = item.optString("id"),
+                            name = item.optString("name", "Item"),
+                            checked = item.optBoolean("checked", false)
                         )
                     )
                 }
             }
             CartPayload(
-                id = o.optString("id", null).takeIf { !it.isNullOrBlank() },
-                title = o.optString("title", null).takeIf { !it.isNullOrBlank() },
+                id = cart.optString("id", null).takeIf { !it.isNullOrBlank() },
                 items = items
             )
         } catch (_: Exception) {
-            CartPayload(null, null, emptyList())
+            CartPayload(null, emptyList())
         }
     }
 
-    fun completeHabit(context: Context, habitId: String) {
-        val remaining = getHabits(context).filter { it.id != habitId }
-        val arr = JSONArray()
-        remaining.forEach { h ->
-            arr.put(
-                JSONObject()
-                    .put("id", h.id)
-                    .put("title", h.title)
-                    .put("color", h.colorArgb)
-            )
+    fun toggleCartItem(context: Context, itemId: String) {
+        val raw = prefs(context).getString(KEY_CART, "{}") ?: "{}"
+        val cart = try {
+            JSONObject(raw)
+        } catch (_: Exception) {
+            return
         }
-        val queue = prefs(context).getString(KEY_COMPLETED_QUEUE, "[]") ?: "[]"
-        val q = try {
-            JSONArray(queue)
+        val items = cart.optJSONArray("items") ?: return
+        var found = false
+        for (index in 0 until items.length()) {
+            val item = items.optJSONObject(index) ?: continue
+            if (item.optString("id") == itemId) {
+                item.put("checked", !item.optBoolean("checked", false))
+                found = true
+                break
+            }
+        }
+        if (!found) return
+
+        val preferences = prefs(context)
+        val queue = try {
+            JSONArray(preferences.getString(KEY_CART_CHECK_QUEUE, "[]") ?: "[]")
         } catch (_: Exception) {
             JSONArray()
         }
-        q.put(habitId)
-        prefs(context).edit()
-            .putString(KEY_HABITS, arr.toString())
-            .putString(KEY_COMPLETED_QUEUE, q.toString())
+        queue.put(itemId)
+        preferences.edit()
+            .putString(KEY_CART, cart.toString())
+            .putString(KEY_CART_CHECK_QUEUE, queue.toString())
             .apply()
     }
 
-    fun drainCompletedHabitIds(context: Context): List<String> {
-        val queue = prefs(context).getString(KEY_COMPLETED_QUEUE, "[]") ?: "[]"
+    fun drainCartCheckIds(context: Context): List<String> {
+        val preferences = prefs(context)
+        val raw = preferences.getString(KEY_CART_CHECK_QUEUE, "[]") ?: "[]"
         val ids = try {
-            val arr = JSONArray(queue)
+            val array = JSONArray(raw)
             buildList {
-                for (i in 0 until arr.length()) add(arr.getString(i))
+                for (index in 0 until array.length()) add(array.getString(index))
             }
         } catch (_: Exception) {
             emptyList()
         }
-        prefs(context).edit().putString(KEY_COMPLETED_QUEUE, "[]").apply()
+        preferences.edit().putString(KEY_CART_CHECK_QUEUE, "[]").apply()
         return ids
     }
 }

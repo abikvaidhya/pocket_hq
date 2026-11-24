@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -11,8 +12,8 @@ import 'providers/settings_provider.dart';
 import 'services/native_bridge.dart';
 import 'services/widget_digest_bootstrap.dart';
 import 'services/notification_service.dart';
-import 'providers/calendar_provider.dart';
 import 'providers/focus_provider.dart';
+import 'providers/habits_provider.dart';
 import 'core/widget_sync_bus.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -36,9 +37,21 @@ class _PocketHQAppState extends ConsumerState<PocketHQApp>
       WidgetSyncBus.configure((sections) async {
         await syncWidgetAndDigest(ref, sections: sections);
       });
-      _deferNonEssentialStartup();
+      _scheduleNonEssentialStartup();
     });
-    setAppVersionCode();
+  }
+
+  void _scheduleNonEssentialStartup() {
+    SchedulerBinding.instance.scheduleTask(() async {
+      await Future<void>.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
+
+      unawaited(setAppVersionCode());
+      unawaited(NotificationService.instance.init());
+      unawaited(ref.read(habitsProvider.notifier).syncAllReminders());
+      unawaited(syncWidgetAndDigest(ref));
+      unawaited(ref.read(focusProvider.notifier).refresh());
+    }, Priority.idle);
   }
 
   Future<void> setAppVersionCode() async {
@@ -48,17 +61,6 @@ class _PocketHQAppState extends ConsumerState<PocketHQApp>
     if (box.get(HiveKeys.appVersion) != version) {
       await box.put(HiveKeys.appVersion, version);
     }
-  }
-
-  Future<void> _deferNonEssentialStartup() async {
-    unawaited(NotificationService.instance.init());
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-    if (!mounted) return;
-    await Future.wait([
-      syncWidgetAndDigest(ref),
-      ref.read(calendarProvider.notifier).refresh(),
-      ref.read(focusProvider.notifier).refresh(),
-    ]);
   }
 
   @override
@@ -84,12 +86,16 @@ class _PocketHQAppState extends ConsumerState<PocketHQApp>
       final nav = rootNavigatorKey.currentState;
       if (nav == null) return;
       final noteId = link['noteId'] as String?;
-      final target = route == AppRoutes.notes && noteId != null
-          ? AppRoutes.noteEditor
-          : route;
+      final target = route == '/' || route == AppRoutes.today
+          ? AppRoutes.today
+          : route == AppRoutes.notes && noteId != null
+              ? AppRoutes.noteEditor
+              : route;
       nav.pushNamedAndRemoveUntil(
         target,
-        (existing) => existing.isFirst,
+        target == AppRoutes.today
+            ? (existing) => false
+            : (existing) => existing.isFirst,
         arguments: noteId == null ? null : {'id': noteId},
       );
     } catch (_) {}
@@ -108,7 +114,7 @@ class _PocketHQAppState extends ConsumerState<PocketHQApp>
       theme: AppTheme.light(useDynamicColor: useDynamicColor),
       darkTheme: AppTheme.dark(useDynamicColor: useDynamicColor),
       onGenerateRoute: AppRouter.onGenerateRoute,
-      initialRoute: AppRoutes.today,
+      initialRoute: '/',
       builder: (context, child) {
         final mediaQuery = MediaQuery.of(context);
         return MediaQuery(

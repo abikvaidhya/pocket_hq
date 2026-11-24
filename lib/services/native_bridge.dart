@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 
 import '../core/constants/app_constants.dart';
@@ -7,7 +9,6 @@ class NativeBridge {
 
   static const MethodChannel _channel =
       MethodChannel(AppConstants.methodChannel);
-  static const EventChannel _events = EventChannel(AppConstants.eventChannel);
   static Future<void> Function()? _deepLinkHandler;
 
   static void setDeepLinkHandler(Future<void> Function() handler) {
@@ -18,19 +19,6 @@ class NativeBridge {
       }
       return null;
     });
-  }
-
-  // Calendar
-  static Future<List<Map<String, dynamic>>> getTodayEvents() async {
-    try {
-      final result =
-          await _channel.invokeMethod<List<dynamic>>('getTodayEvents');
-      return (result ?? [])
-          .map((e) => Map<String, dynamic>.from(e as Map))
-          .toList();
-    } on PlatformException catch (e) {
-      throw NativeBridgeException('getTodayEvents failed: ${e.message}');
-    }
   }
 
   // Usage / Screen Time
@@ -134,10 +122,11 @@ class NativeBridge {
     }
   }
 
-  static Future<List<String>> drainWidgetHabitCompletions() async {
+  static Future<List<String>> drainWidgetCartChecks() async {
+    if (!Platform.isAndroid) return [];
     try {
-      final result = await _channel
-          .invokeMethod<List<dynamic>>('drainWidgetHabitCompletions');
+      final result =
+          await _channel.invokeMethod<List<dynamic>>('drainWidgetCartChecks');
       return (result ?? []).map((e) => e.toString()).toList();
     } on PlatformException {
       return [];
@@ -155,14 +144,13 @@ class NativeBridge {
   }
 
   static Future<void> updateHomeWidget(Map<String, dynamic> data) async {
+    if (!Platform.isAndroid) return;
     try {
       await _channel.invokeMethod('updateHomeWidget', data);
     } on PlatformException catch (e) {
       throw NativeBridgeException('updateHomeWidget failed: ${e.message}');
     }
   }
-
-  static Stream<dynamic> get eventStream => _events.receiveBroadcastStream();
 }
 
 class NativeBridgeException implements Exception {

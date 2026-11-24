@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../../data/models/note.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/voice_playback_provider.dart';
-import '../bottom_nav_bar.dart';
 import 'widgets/voice_record_sheet.dart';
 import 'widgets/voice_waveform.dart';
 import '../../core/router/app_router.dart';
@@ -21,16 +20,9 @@ class NotesPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notes'),
-        actions: [
-          IconButton(
-            onPressed: () => _showCreateMenu(context, ref),
-            icon: const Icon(Iconsax.add),
-            tooltip: 'New note',
-          ),
-        ],
       ),
       body: notes.isEmpty
-          ? _EmptyState(onAdd: () => _showCreateMenu(context, ref))
+          ? const _EmptyState()
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
               physics: const BouncingScrollPhysics(),
@@ -60,7 +52,6 @@ class NotesPage extends ConsumerWidget {
         icon: const Icon(Iconsax.add),
         label: const Text('New note'),
       ),
-      bottomNavigationBar: const CustomBottomNav(currentIndex: 3),
     );
   }
 
@@ -450,8 +441,7 @@ class _TextNoteCard extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  final VoidCallback onAdd;
-  const _EmptyState({required this.onAdd});
+  const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -481,12 +471,6 @@ class _EmptyState extends StatelessWidget {
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
               ),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Iconsax.add),
-              label: const Text('New note'),
             ),
           ],
         ),

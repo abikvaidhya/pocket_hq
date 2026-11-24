@@ -1,27 +1,23 @@
 package com.abik.vaidhya.pocket_hq
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.glance.appwidget.updateAll
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.abik.vaidhya.pocket_hq.calendar.CalendarHelper
 import com.abik.vaidhya.pocket_hq.usage.UsageStatsHelper
 import com.abik.vaidhya.pocket_hq.widgets.PocketHQWidgetProvider
 import com.abik.vaidhya.pocket_hq.widgets.WidgetDataStore
+import com.abik.vaidhya.pocket_hq.widgets.ShoppingCartWidgetProvider
 import com.abik.vaidhya.pocket_hq.workers.DailyDigestWorker
 
 class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "com.abik.vaidhya.pocket_hq/native"
-    private val EVENTS = "com.abik.vaidhya.pocket_hq/events"
     private var methodChannel: MethodChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,14 +50,6 @@ class MainActivity : FlutterFragmentActivity() {
         methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
         methodChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
-                "getTodayEvents" -> {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val events = CalendarHelper.getTodayEvents(this@MainActivity)
-                        Handler(Looper.getMainLooper()).post {
-                            result.success(events)
-                        }
-                    }
-                }
                 "hasUsagePermission" -> {
                     result.success(UsageStatsHelper.hasPermission(this))
                 }
@@ -112,25 +100,17 @@ class MainActivity : FlutterFragmentActivity() {
                     WidgetDataStore.saveFromFlutter(
                         this,
                         data["notesJson"] as? String,
-                        data["habitsJson"] as? String,
-                        data["appsJson"] as? String,
-                        data["screenTotal"] as? String,
                         data["cartJson"] as? String
                     )
-                    // Keep legacy keys for any old UI
-                    getSharedPreferences(WidgetDataStore.PREFS, Context.MODE_PRIVATE)
-                        .edit()
-                        .putString("title", data["title"] as? String ?: "Pocket HQ")
-                        .putString("subtitle", data["subtitle"] as? String ?: "")
-                        .apply()
                     try {
                         PocketHQWidgetProvider.refreshAll(this)
+                        ShoppingCartWidgetProvider.refreshAll(this)
                     } catch (_: Exception) {
                     }
                     result.success(null)
                 }
-                "drainWidgetHabitCompletions" -> {
-                    result.success(WidgetDataStore.drainCompletedHabitIds(this))
+                "drainWidgetCartChecks" -> {
+                    result.success(WidgetDataStore.drainCartCheckIds(this))
                 }
                 "getPendingDeepLink" -> {
                     val map = mapOf(
@@ -145,11 +125,6 @@ class MainActivity : FlutterFragmentActivity() {
             }
         }
 
-        EventChannel(flutterEngine.dartExecutor.binaryMessenger, EVENTS)
-            .setStreamHandler(object : EventChannel.StreamHandler {
-                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {}
-                override fun onCancel(arguments: Any?) {}
-            })
     }
 
     companion object {

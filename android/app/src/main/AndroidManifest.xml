@@ -19,8 +19,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Optional for background tracking later -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <!-- Access calendar, post notifications, receive boot completed, wake-up lock and schedule exact alarm -->
-    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <!-- Notification and exact alarm permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -60,19 +59,41 @@
         <receiver
             android:name=".widgets.PocketHQWidgetProvider"
             android:exported="true"
-            android:label="Pocket HQ">
+            android:label="@string/notes_widget_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <!-- custom actions -->
-                <action android:name="com.pockethq.widget.CYCLE" />
-                <action android:name="com.pockethq.widget.SET_PAGE" />
-                <action android:name="com.pockethq.widget.COMPLETE_HABIT" />
                 <action android:name="com.pockethq.widget.TOGGLE_VOICE" />
                 <action android:name="com.pockethq.widget.OPEN_APP" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/today_glance_widget_info" />
+                android:resource="@xml/notes_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.ShoppingCartWidgetProvider"
+            android:exported="true"
+            android:label="@string/cart_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.pockethq.widget.TOGGLE_CART_ITEM" />
+                <action android:name="com.pockethq.widget.OPEN_APP" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/shopping_cart_widget_info" />
+        </receiver>
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+            android:exported="false" />
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
         </receiver>
     </application>
     <!-- Required to query activities that can process text, see:

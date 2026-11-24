@@ -21,7 +21,7 @@ class SettingsPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Settings'),
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -71,32 +71,6 @@ class SettingsPage extends ConsumerWidget {
                   const SnackBar(content: Text('Dashboard layout reset')),
                 );
               },
-            ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          _SectionHeader(title: 'Lists & time'),
-          Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Iconsax.shopping_cart),
-                  title: const Text('Shopping carts'),
-                  subtitle:
-                      const Text('Checkable lists · pin one to the widget'),
-                  trailing: const Icon(Iconsax.arrow_right_3, size: 18),
-                  onTap: () => AppRouter.push(context, AppRoutes.carts),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Iconsax.timer_1),
-                  title: const Text('Quick reminders'),
-                  subtitle: const Text('Hold to speak · timers & alarms'),
-                  trailing: const Icon(Iconsax.arrow_right_3, size: 18),
-                  onTap: () => AppRouter.push(context, AppRoutes.reminders),
-                ),
-              ],
             ),
           ),
           const SizedBox(

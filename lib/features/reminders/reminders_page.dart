@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +29,12 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
   void initState() {
     super.initState();
     _initSpeech();
+  }
+
+  @override
+  void dispose() {
+    unawaited(_speech.cancel());
+    super.dispose();
   }
 
   Future<void> _initSpeech() async {
@@ -61,6 +69,7 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
     HapticFeedback.mediumImpact();
     if (!_speechReady) {
       await _initSpeech();
+      if (!mounted) return;
       if (!_speechReady) {
         setState(() {
           _listening = false;
@@ -69,21 +78,31 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
         return;
       }
     }
-    await _speech.listen(
-      onResult: (r) {
-        setState(() => _liveText = r.recognizedWords);
-      },
-      listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 3),
-      partialResults: true,
-      cancelOnError: true,
-      listenMode: stt.ListenMode.confirmation,
-    );
+    try {
+      await _speech.listen(
+        onResult: (r) {
+          if (mounted) setState(() => _liveText = r.recognizedWords);
+        },
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        partialResults: true,
+        cancelOnError: true,
+        listenMode: stt.ListenMode.confirmation,
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _listening = false;
+          _error = 'Could not start speech recognition: $e';
+        });
+      }
+    }
   }
 
   Future<void> _stopListenAndSave() async {
     HapticFeedback.lightImpact();
     await _speech.stop();
+    if (!mounted) return;
     setState(() => _listening = false);
     final text = _liveText.trim();
     if (text.isEmpty) {
@@ -110,9 +129,9 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
         ),
       );
     } on ReminderParseException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e.message);
     } catch (e) {
-      setState(() => _error = 'Could not save: $e');
+      if (mounted) setState(() => _error = 'Could not save: $e');
     }
   }
 
@@ -122,118 +141,124 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
     Duration duration = const Duration(minutes: 15);
     var mode = _TypeMode.quick;
 
-    final ok = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setModal) {
-            final bottom = MediaQuery.of(ctx).viewInsets.bottom;
-            return Padding(
-              padding: EdgeInsets.fromLTRB(20, 8, 20, 20 + bottom),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Add reminder',
-                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  SegmentedButton<_TypeMode>(
-                    segments: const [
-                      ButtonSegment(
-                        value: _TypeMode.quick,
-                        label: Text('Quick timer'),
-                        icon: Icon(Iconsax.timer_1, size: 16),
-                      ),
-                      ButtonSegment(
-                        value: _TypeMode.phrase,
-                        label: Text('Phrase'),
-                        icon: Icon(Iconsax.text, size: 16),
-                      ),
-                    ],
-                    selected: {mode},
-                    onSelectionChanged: (s) => setModal(() => mode = s.first),
-                  ),
-                  const SizedBox(height: 16),
-                  if (mode == _TypeMode.quick) ...[
-                    TextField(
-                      controller: labelCtrl,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
-                        labelText: 'Label (optional)',
-                        hintText: 'Turn off stove',
-                      ),
+    try {
+      final ok = await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (ctx) {
+          return StatefulBuilder(
+            builder: (ctx, setModal) {
+              final bottom = MediaQuery.of(ctx).viewInsets.bottom;
+              return Padding(
+                padding: EdgeInsets.fromLTRB(20, 8, 20, 20 + bottom),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Add reminder',
+                      style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
                     const SizedBox(height: 12),
-                    Text('Remind in', style: Theme.of(ctx).textTheme.labelLarge),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final d in const [
-                          Duration(minutes: 5),
-                          Duration(minutes: 10),
-                          Duration(minutes: 15),
-                          Duration(minutes: 30),
-                          Duration(hours: 1),
-                          Duration(hours: 2),
-                        ])
-                          ChoiceChip(
-                            label: Text(_durLabel(d)),
-                            selected: duration == d,
-                            onSelected: (_) => setModal(() => duration = d),
-                          ),
+                    SegmentedButton<_TypeMode>(
+                      segments: const [
+                        ButtonSegment(
+                          value: _TypeMode.quick,
+                          label: Text('Quick timer'),
+                          icon: Icon(Iconsax.timer_1, size: 16),
+                        ),
+                        ButtonSegment(
+                          value: _TypeMode.phrase,
+                          label: Text('Phrase'),
+                          icon: Icon(Iconsax.text, size: 16),
+                        ),
                       ],
+                      selected: {mode},
+                      onSelectionChanged: (s) => setModal(() => mode = s.first),
                     ),
-                  ] else ...[
-                    TextField(
-                      controller: phraseCtrl,
-                      maxLines: 3,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
-                        labelText: 'Say it in text',
-                        hintText: 'Remind me to call mom tomorrow at 6 PM',
+                    const SizedBox(height: 16),
+                    if (mode == _TypeMode.quick) ...[
+                      TextField(
+                        controller: labelCtrl,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: const InputDecoration(
+                          labelText: 'Label (optional)',
+                          hintText: 'Turn off stove',
+                        ),
                       ),
+                      const SizedBox(height: 12),
+                      Text('Remind in',
+                          style: Theme.of(ctx).textTheme.labelLarge),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final d in const [
+                            Duration(minutes: 5),
+                            Duration(minutes: 10),
+                            Duration(minutes: 15),
+                            Duration(minutes: 30),
+                            Duration(hours: 1),
+                            Duration(hours: 2),
+                          ])
+                            ChoiceChip(
+                              label: Text(_durLabel(d)),
+                              selected: duration == d,
+                              onSelected: (_) => setModal(() => duration = d),
+                            ),
+                        ],
+                      ),
+                    ] else ...[
+                      TextField(
+                        controller: phraseCtrl,
+                        maxLines: 3,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: const InputDecoration(
+                          labelText: 'Say it in text',
+                          hintText: 'Remind me to call mom tomorrow at 6 PM',
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text('Set'),
                     ),
                   ],
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text('Set'),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-
-    if (ok != true) return;
-
-    if (mode == _TypeMode.quick) {
-      final label =
-          labelCtrl.text.trim().isEmpty ? 'Reminder' : labelCtrl.text.trim();
-      final when = DateTime.now().add(duration);
-      await ref.read(remindersProvider.notifier).addManual(
-            label: label,
-            triggerAt: when,
-            kind: 'timer',
+                ),
+              );
+            },
           );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Timer: "$label" · ${_fmt(when)}')),
+        },
       );
-    } else {
-      final phrase = phraseCtrl.text.trim();
-      if (phrase.isEmpty) return;
-      await _commitText(phrase);
+
+      if (ok != true) return;
+
+      if (mode == _TypeMode.quick) {
+        final label =
+            labelCtrl.text.trim().isEmpty ? 'Reminder' : labelCtrl.text.trim();
+        final when = DateTime.now().add(duration);
+        await ref.read(remindersProvider.notifier).addManual(
+              label: label,
+              triggerAt: when,
+              kind: 'timer',
+            );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Timer: "$label" · ${_fmt(when)}')),
+        );
+      } else {
+        final phrase = phraseCtrl.text.trim();
+        if (phrase.isEmpty) return;
+        await _commitText(phrase);
+      }
+    } finally {
+      labelCtrl.dispose();
+      phraseCtrl.dispose();
     }
   }
 
@@ -264,13 +289,6 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quick reminders'),
-        actions: [
-          IconButton(
-            tooltip: 'Type a reminder',
-            onPressed: _showTypeSheet,
-            icon: const Icon(Iconsax.edit),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -294,48 +312,11 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
                       'e.g. "remind me to turn off the stove in 10 minutes"',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.5),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    GestureDetector(
-                      onLongPressStart: (_) => _startListen(),
-                      onLongPressEnd: (_) => _stopListenAndSave(),
-                      onLongPressCancel: () async {
-                        await _speech.cancel();
-                        setState(() {
-                          _listening = false;
-                          _liveText = '';
-                        });
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        width: _listening ? 88 : 72,
-                        height: _listening ? 88 : 72,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _listening
-                              ? theme.colorScheme.error
-                              : theme.colorScheme.primary,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (_listening
-                                      ? theme.colorScheme.error
-                                      : theme.colorScheme.primary)
-                                  .withValues(alpha: 0.35),
-                              blurRadius: _listening ? 24 : 12,
-                              spreadRadius: _listening ? 4 : 0,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          _listening ? Iconsax.microphone_2 : Iconsax.microphone,
-                          color: theme.colorScheme.onPrimary,
-                          size: 32,
-                        ),
-                      ),
-                    ),
+                    const SizedBox(height: 8),
                     if (_liveText.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Text(
@@ -374,8 +355,8 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
                       'No reminders yet.\nHold the mic or type one.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.45),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.45),
                       ),
                     ),
                   )
@@ -433,6 +414,25 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
                   ),
           ),
         ],
+      ),
+      floatingActionButton: GestureDetector(
+        onLongPressStart: (_) => _startListen(),
+        onLongPressEnd: (_) => _stopListenAndSave(),
+        onLongPressCancel: () async {
+          await _speech.cancel();
+          if (!mounted) return;
+          setState(() {
+            _listening = false;
+            _liveText = '';
+          });
+        },
+        child: FloatingActionButton.extended(
+          tooltip: 'Hold to speak a reminder',
+          onPressed: _showTypeSheet,
+          icon: Icon(_listening ? Iconsax.microphone_2 : Iconsax.microphone),
+          label: Text(_listening ? 'Listening…' : 'Hold to speak'),
+          backgroundColor: _listening ? theme.colorScheme.error : null,
+        ),
       ),
     );
   }

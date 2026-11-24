@@ -4,7 +4,6 @@ import 'package:iconsax/iconsax.dart';
 
 import '../../data/models/habit.dart';
 import '../../providers/habits_provider.dart';
-import '../bottom_nav_bar.dart';
 import 'widgets/habit_tile.dart';
 import 'widgets/add_habit_sheet.dart';
 import 'widgets/habit_stats_header.dart';
@@ -22,16 +21,9 @@ class HabitsPage extends ConsumerWidget {
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Habits'),
-        actions: [
-          IconButton(
-            onPressed: () => _showAddSheet(context),
-            icon: const Icon(Iconsax.add),
-            tooltip: 'Add habit',
-          ),
-        ],
       ),
       body: habits.isEmpty
-          ? _EmptyState(onAdd: () => _showAddSheet(context))
+          ? const _EmptyState()
           : CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
@@ -65,14 +57,11 @@ class HabitsPage extends ConsumerWidget {
                 ),
               ],
             ),
-      floatingActionButton: habits.isEmpty
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => _showAddSheet(context),
-              icon: const Icon(Iconsax.add),
-              label: const Text('Add habit'),
-            ),
-      bottomNavigationBar: const CustomBottomNav(currentIndex: 1),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddSheet(context),
+        icon: const Icon(Iconsax.add),
+        label: const Text('Add habit'),
+      ),
     );
   }
 
@@ -103,7 +92,8 @@ class HabitsPage extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete habit?'),
-        content: Text('“${habit.title}” and its streak history will be removed.'),
+        content:
+            Text('“${habit.title}” and its streak history will be removed.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -126,8 +116,7 @@ class HabitsPage extends ConsumerWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  final VoidCallback onAdd;
-  const _EmptyState({required this.onAdd});
+  const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -157,12 +146,6 @@ class _EmptyState extends StatelessWidget {
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
               ),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Iconsax.add),
-              label: const Text('Add habit'),
             ),
           ],
         ),

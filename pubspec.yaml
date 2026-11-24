@@ -1,7 +1,7 @@
 name: pocket_hq
 description: 'Pocket HQ - Personal dashboard'
 publish_to: 'none'
-version: 1.0.4+5
+version: 1.0.4+6
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -12,7 +12,6 @@ dependencies:
 
   # State management
   flutter_riverpod:
-  riverpod_annotation:
 
   # Local storage
   hive:
@@ -20,24 +19,21 @@ dependencies:
 
   # UI & charts
   fl_chart:
-  flutter_staggered_grid_view:
   google_fonts:
-  flutter_animate:
   iconsax:
 
   # Native bridges & permissions
   local_auth:
   permission_handler:
 
-  # usage_stats:          # wrapper or pure MethodChannel
-  device_calendar:       # or pure native
   geolocator:
   geocoding:
 
   # Notifications & background
   flutter_local_notifications:
+  flutter_timezone: ^4.1.1
   workmanager:
-  timezone: 
+  timezone:
 
   # Utils
   intl:
@@ -49,10 +45,6 @@ dependencies:
   record:
   just_audio:
   speech_to_text:
-  freezed_annotation:
-  json_annotation:
-  collection:
-  equatable:
 
 dev_dependencies:
   flutter_test:
@@ -63,3 +55,6 @@ dev_dependencies:
   hive_generator: ^2.0.1
   freezed: ^2.5.2
   json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true

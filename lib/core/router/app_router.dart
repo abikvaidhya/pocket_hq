@@ -36,6 +36,7 @@ class AppRouter {
     final args = settings.arguments;
 
     switch (name) {
+      case '/':
       case AppRoutes.today:
         return _buildRoute(const TodayPage(), settings);
       case AppRoutes.habits:
@@ -110,13 +111,38 @@ class AppRouter {
   /// Helper for typed navigation
   static Future<T?> push<T>(BuildContext context, String route,
       {Object? arguments}) {
+    if (_isHomeRoute(route)) {
+      return Navigator.of(context).pushNamedAndRemoveUntil<T>(
+        route,
+        (route) => false,
+        arguments: arguments,
+      );
+    }
     return Navigator.of(context).pushNamed<T>(route, arguments: arguments);
   }
 
   static void pushReplacement(BuildContext context, String route,
       {Object? arguments}) {
+    if (_isHomeRoute(route)) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        route,
+        (route) => false,
+        arguments: arguments,
+      );
+      return;
+    }
     Navigator.of(context).pushReplacementNamed(route, arguments: arguments);
   }
+
+  static void goHome(BuildContext context) {
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.today,
+      (route) => false,
+    );
+  }
+
+  static bool _isHomeRoute(String route) =>
+      route == AppRoutes.today || route == '/';
 
   static void pop<T>(BuildContext context, [T? result]) {
     Navigator.of(context).pop(result);

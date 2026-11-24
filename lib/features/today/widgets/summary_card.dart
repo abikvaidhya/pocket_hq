@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../../../providers/calendar_provider.dart';
 import '../../../providers/focus_provider.dart';
 import '../../../providers/habits_provider.dart';
 import '../../../providers/notes_provider.dart';
@@ -18,8 +17,7 @@ class SummaryCard extends ConsumerWidget {
     final habits = ref.watch(activeHabitsProvider);
     final habitsDone = ref.watch(todayCompletedCountProvider);
     final habitsTotal = habits.length;
-    final habitsLabel =
-        habitsTotal == 0 ? '0' : '$habitsDone/$habitsTotal';
+    final habitsLabel = habitsTotal == 0 ? '0' : '$habitsDone/$habitsTotal';
 
     final focus = ref.watch(focusProvider);
     final screenLabel = !focus.hasPermission && !focus.loading
@@ -39,8 +37,6 @@ class SummaryCard extends ConsumerWidget {
     final tripsLabel = trips.activeTrip != null
         ? 'Live'
         : (tripsToday == 0 ? '0' : '$tripsToday');
-
-    final events = ref.watch(calendarProvider).events.length;
 
     return Card(
       child: Padding(
@@ -111,13 +107,6 @@ class SummaryCard extends ConsumerWidget {
                   label: 'Trips',
                   value: tripsLabel,
                   color: const Color(0xFF00BCD4),
-                ),
-                const SizedBox(width: 10),
-                _StatChip(
-                  icon: Iconsax.calendar,
-                  label: 'Events',
-                  value: '$events',
-                  color: const Color(0xFFFF6D00),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

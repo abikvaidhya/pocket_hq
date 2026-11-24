@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax/iconsax.dart';
 
 import '../../../data/models/note.dart';
 import '../../../providers/notes_provider.dart';
@@ -83,7 +82,7 @@ class _NoteEditorPageState extends ConsumerState<NoteEditorPage> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Iconsax.arrow_left),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () async {
               final ok = await _onWillPop();
               if (ok && context.mounted) Navigator.of(context).pop();
@@ -98,16 +97,14 @@ class _NoteEditorPageState extends ConsumerState<NoteEditorPage> {
                       ref.read(notesProvider.notifier).getById(note.id));
                 },
                 icon: Icon(
-                  note.isPinned
-                      ? Iconsax.attach_circle5
-                      : Iconsax.attach_circle,
+                  note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
                   color: note.isPinned ? theme.colorScheme.primary : null,
                 ),
                 tooltip: note.isPinned ? 'Unpin' : 'Pin',
               ),
             IconButton(
               onPressed: () => _save(pop: true),
-              icon: const Icon(Iconsax.tick_circle),
+              icon: const Icon(Icons.check),
               tooltip: 'Save',
             ),
           ],

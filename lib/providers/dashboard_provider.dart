@@ -18,7 +18,13 @@ class DashboardLayoutNotifier extends StateNotifier<List<String>> {
     if (stored == null || stored.isEmpty) {
       return List<String>.from(AppConstants.defaultCardOrder);
     }
-    return stored.cast<String>();
+    final visibleCards = stored
+        .cast<String>()
+        .where(AppConstants.defaultCardOrder.contains)
+        .toList();
+    return visibleCards.isEmpty
+        ? List<String>.from(AppConstants.defaultCardOrder)
+        : visibleCards;
   }
 
   Future<void> reorder(int oldIndex, int newIndex) async {

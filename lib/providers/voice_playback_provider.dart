@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -41,18 +43,16 @@ class VoicePlaybackState {
 
 final voicePlaybackProvider =
     StateNotifierProvider<VoicePlaybackNotifier, VoicePlaybackState>((ref) {
-  final n = VoicePlaybackNotifier();
-  ref.onDispose(n.dispose);
-  return n;
+  return VoicePlaybackNotifier();
 });
 
 class VoicePlaybackNotifier extends StateNotifier<VoicePlaybackState> {
   VoicePlaybackNotifier() : super(const VoicePlaybackState()) {
-    _player.positionStream.listen((pos) {
+    _positionSubscription = _player.positionStream.listen((pos) {
       if (!mounted) return;
       state = state.copyWith(position: pos);
     });
-    _player.playerStateStream.listen((ps) {
+    _playerStateSubscription = _player.playerStateStream.listen((ps) {
       if (!mounted) return;
       final playing = ps.playing;
       if (ps.processingState == ProcessingState.completed) {
@@ -66,13 +66,16 @@ class VoicePlaybackNotifier extends StateNotifier<VoicePlaybackState> {
       }
       state = state.copyWith(playing: playing);
     });
-    _player.durationStream.listen((d) {
+    _durationSubscription = _player.durationStream.listen((d) {
       if (!mounted || d == null) return;
       state = state.copyWith(duration: d);
     });
   }
 
   final AudioPlayer _player = AudioPlayer();
+  late final StreamSubscription<Duration> _positionSubscription;
+  late final StreamSubscription<PlayerState> _playerStateSubscription;
+  late final StreamSubscription<Duration?> _durationSubscription;
   @override
   bool mounted = true;
 
@@ -120,7 +123,10 @@ class VoicePlaybackNotifier extends StateNotifier<VoicePlaybackState> {
   @override
   void dispose() {
     mounted = false;
-    _player.dispose();
+    unawaited(_positionSubscription.cancel());
+    unawaited(_playerStateSubscription.cancel());
+    unawaited(_durationSubscription.cancel());
+    unawaited(_player.dispose());
     super.dispose();
   }
 }

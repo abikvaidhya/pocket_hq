@@ -109,48 +109,55 @@ class TripsNotifier extends StateNotifier<TripsState> {
 
   Future<void> startTrip({String? title}) async {
     state = state.copyWith(loading: true, error: null);
-    if (!await _ensurePermission()) {
-      state = state.copyWith(loading: false);
-      return;
-    }
+    try {
+      if (!await _ensurePermission()) {
+        state = state.copyWith(loading: false);
+        return;
+      }
 
-    if (state.activeTrip != null) {
-      await stopTrip();
-    }
+      if (state.activeTrip != null) {
+        await stopTrip();
+      }
 
-    final pos = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-      ),
-    );
-
-    final address = await _reverseGeocode(pos.latitude, pos.longitude);
-    final trip = Trip(
-      title: title ??
-          'Trip ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
-      startedAt: DateTime.now(),
-      startAddress: address,
-      isActive: true,
-      route: [
-        TripPoint(
-          lat: pos.latitude,
-          lng: pos.longitude,
-          timestamp: DateTime.now(),
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
         ),
-      ],
-    );
+      );
 
-    await _box.put(trip.id, trip);
-    _pendingPersistTrip = trip;
-    load();
-    WidgetSyncBus.notify(WidgetSyncSection.trips);
-    state = state.copyWith(
-      activeTrip: trip,
-      tracking: true,
-      loading: false,
-      lastPosition: pos,
-    );
-    _listen();
+      final address = await _reverseGeocode(pos.latitude, pos.longitude);
+      final trip = Trip(
+        title: title ??
+            'Trip ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+        startedAt: DateTime.now(),
+        startAddress: address,
+        isActive: true,
+        route: [
+          TripPoint(
+            lat: pos.latitude,
+            lng: pos.longitude,
+            timestamp: DateTime.now(),
+          ),
+        ],
+      );
+
+      await _box.put(trip.id, trip);
+      _pendingPersistTrip = trip;
+      load();
+      WidgetSyncBus.notify(WidgetSyncSection.trips);
+      state = state.copyWith(
+        activeTrip: trip,
+        tracking: true,
+        loading: false,
+        lastPosition: pos,
+      );
+      _listen();
+    } catch (e) {
+      state = state.copyWith(
+        loading: false,
+        error: 'Could not start trip: $e',
+      );
+    }
   }
 
   void _listen() {

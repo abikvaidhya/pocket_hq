@@ -7,127 +7,15 @@
     android:orientation="vertical"
     android:padding="12dp">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:text="Pocket HQ"
-            android:textColor="#F2F3F5"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/btn_prev"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="6dp"
-                android:text="‹"
-                android:textColor="#8B9BFF"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/tab_notes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="6dp"
-                android:text="Notes"
-                android:textColor="#8B9BFF"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/tab_habits"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="6dp"
-                android:text="Habits"
-                android:textColor="#9AA0A8"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/tab_screen"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="6dp"
-                android:text="Screen"
-                android:textColor="#9AA0A8"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/tab_cart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="6dp"
-                android:text="Cart"
-                android:textColor="#9AA0A8"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/btn_next"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="6dp"
-                android:text="›"
-                android:textColor="#8B9BFF"
-                android:textSize="18sp" />
-        </LinearLayout>
-    </RelativeLayout>
-
     <TextView
         android:id="@+id/section_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:text="Notes"
-        android:textColor="#9AA0A8"
-        android:textSize="11sp" />
+        android:textColor="#F2F3F5"
+        android:textSize="15sp"
+        android:textStyle="bold" />
 
-    <!-- Row 0 -->
-    <LinearLayout
-        android:id="@+id/row_0"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="#1E2128"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="10dp"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/row_0_action"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingEnd="10dp"
-            android:text="▶"
-            android:textColor="#8B9BFF"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/row_0_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="#F2F3F5"
-            android:textSize="13sp" />
-    </LinearLayout>
-
-    <!-- Row 1 -->
     <LinearLayout
         android:id="@+id/row_1"
         android:layout_width="match_parent"
@@ -136,20 +24,17 @@
         android:background="#1E2128"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="10dp"
+        android:padding="8dp"
         android:visibility="gone">
-
         <TextView
             android:id="@+id/row_1_action"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingEnd="10dp"
-            android:text="▶"
             android:textColor="#8B9BFF"
             android:textSize="13sp"
             android:textStyle="bold"
             android:visibility="gone" />
-
         <TextView
             android:id="@+id/row_1_text"
             android:layout_width="0dp"
@@ -161,7 +46,6 @@
             android:textSize="13sp" />
     </LinearLayout>
 
-    <!-- Row 2 -->
     <LinearLayout
         android:id="@+id/row_2"
         android:layout_width="match_parent"
@@ -170,20 +54,17 @@
         android:background="#1E2128"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="10dp"
+        android:padding="8dp"
         android:visibility="gone">
-
         <TextView
             android:id="@+id/row_2_action"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingEnd="10dp"
-            android:text="▶"
             android:textColor="#8B9BFF"
             android:textSize="13sp"
             android:textStyle="bold"
             android:visibility="gone" />
-
         <TextView
             android:id="@+id/row_2_text"
             android:layout_width="0dp"
@@ -195,7 +76,6 @@
             android:textSize="13sp" />
     </LinearLayout>
 
-    <!-- Row 3 -->
     <LinearLayout
         android:id="@+id/row_3"
         android:layout_width="match_parent"
@@ -204,22 +84,49 @@
         android:background="#1E2128"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="10dp"
+        android:padding="8dp"
         android:visibility="gone">
-
         <TextView
             android:id="@+id/row_3_action"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingEnd="10dp"
-            android:text="▶"
             android:textColor="#8B9BFF"
             android:textSize="13sp"
             android:textStyle="bold"
             android:visibility="gone" />
-
         <TextView
             android:id="@+id/row_3_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#F2F3F5"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/row_0"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="#1E2128"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="gone">
+        <TextView
+            android:id="@+id/row_0_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="10dp"
+            android:textColor="#8B9BFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+        <TextView
+            android:id="@+id/row_0_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

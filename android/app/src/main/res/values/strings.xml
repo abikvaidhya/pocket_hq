@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Pocket HQ</string>
-    <string name="widget_description">Notes, habits, and screen time at a glance</string>
+    <string name="notes_widget_label">Notes</string>
+    <string name="cart_widget_label">Cart</string>
+    <string name="widget_description">Notes at a glance</string>
+    <string name="shopping_cart_widget_description">Unchecked items in your cart</string>
 </resources>

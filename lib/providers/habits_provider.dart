@@ -49,8 +49,10 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
   }
 
   Future<void> delete(String id) async {
-    await _box.delete(id);
+    await NotificationService.instance.cancelWithPayload('habit:$id');
+    await NotificationService.instance.cancel(_notificationId(id));
     await NotificationService.instance.cancel(id.hashCode);
+    await _box.delete(id);
     _load();
     WidgetSyncBus.notify(WidgetSyncSection.habits);
   }
@@ -76,7 +78,9 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
   }
 
   Future<void> _syncReminder(Habit habit) async {
-    final notifId = habit.id.hashCode;
+    final notifId = _notificationId(habit.id);
+    await NotificationService.instance.cancelWithPayload('habit:${habit.id}');
+    await NotificationService.instance.cancel(habit.id.hashCode);
 
     if (habit.reminderHour != null &&
         habit.reminderMinute != null &&
@@ -92,5 +96,20 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
     } else {
       await NotificationService.instance.cancel(notifId);
     }
+  }
+
+  Future<void> syncAllReminders() async {
+    await NotificationService.instance.cancelWithPayloadPrefix('habit:');
+    for (final habit in _box.values) {
+      await _syncReminder(habit);
+    }
+  }
+
+  int _notificationId(String id) {
+    var hash = 0x811c9dc5;
+    for (final unit in id.codeUnits) {
+      hash = ((hash ^ unit) * 0x01000193) & 0x7fffffff;
+    }
+    return hash;
   }
 }

@@ -1,79 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../data/models/shopping_cart.dart';
 import '../../providers/carts_provider.dart';
 
-/// Edits items live — no Save button; Hive writes on every change.
 class CartDetailPage extends ConsumerStatefulWidget {
-  final String cartId;
+  final String? cartId;
 
-  const CartDetailPage({super.key, required this.cartId});
+  const CartDetailPage({super.key, this.cartId});
 
   @override
   ConsumerState<CartDetailPage> createState() => _CartDetailPageState();
 }
 
 class _CartDetailPageState extends ConsumerState<CartDetailPage> {
-  final _itemCtrl = TextEditingController();
-  final _itemFocus = FocusNode();
+  final _itemsCtrl = TextEditingController();
 
   @override
   void dispose() {
-    _itemCtrl.dispose();
-    _itemFocus.dispose();
+    _itemsCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _addItem() async {
-    final text = _itemCtrl.text;
-    if (text.trim().isEmpty) return;
-    await ref.read(cartsProvider.notifier).addItem(widget.cartId, text);
-    _itemCtrl.clear();
-    _itemFocus.requestFocus();
-  }
-
-  Future<void> _editTitle(ShoppingCart cart) async {
-    final titleCtrl = TextEditingController(text: cart.title);
-    final purposeCtrl = TextEditingController(text: cart.purpose);
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Edit cart'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleCtrl,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: purposeCtrl,
-              decoration: const InputDecoration(labelText: 'Purpose'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Done'),
-          ),
-        ],
-      ),
-    );
-    if (ok == true) {
-      await ref.read(cartsProvider.notifier).renameCart(
-            widget.cartId,
-            title: titleCtrl.text,
-            purpose: purposeCtrl.text,
-          );
-    }
+  Future<void> _addItems(ShoppingCart cart) async {
+    final item = _itemsCtrl.text.trim();
+    if (item.isEmpty) return;
+    await ref.read(cartsProvider.notifier).addItems(cart.id, [item]);
+    _itemsCtrl.clear();
   }
 
   @override
@@ -81,82 +36,44 @@ class _CartDetailPageState extends ConsumerState<CartDetailPage> {
     final theme = Theme.of(context);
     final carts = ref.watch(cartsProvider);
     ShoppingCart? cart;
-    for (final c in carts) {
-      if (c.id == widget.cartId) {
-        cart = c;
+    for (final value in carts) {
+      if (widget.cartId == null || value.id == widget.cartId) {
+        cart = value;
         break;
       }
     }
 
     if (cart == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Cart')),
-        body: const Center(child: Text('Cart not found')),
+        appBar: AppBar(title: const Text('To Get')),
+        body: const Center(child: Text('Shopping cart not found')),
       );
     }
 
     final items = cart.sortedItems;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(cart.preview),
+        title: const Text('To Get'),
         actions: [
-          IconButton(
-            tooltip: cart.isPinned ? 'Unpin from widget' : 'Pin to widget',
-            onPressed: () =>
-                ref.read(cartsProvider.notifier).togglePin(cart!.id),
-            icon: Icon(
-              cart.isPinned ? Iconsax.attach_circle5 : Iconsax.attach_circle,
-              color: cart.isPinned ? theme.colorScheme.primary : null,
-            ),
-          ),
-          IconButton(
-            tooltip: 'Edit name',
-            onPressed: () => _editTitle(cart!),
-            icon: const Icon(Iconsax.edit_2),
+          PopupMenuButton<_CartAction>(
+            tooltip: 'Shopping cart options',
+            onSelected: (action) {
+              if (action == _CartAction.clearChecked) {
+                ref.read(cartsProvider.notifier).clearChecked(cart!.id);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _CartAction.clearChecked,
+                enabled: cart!.checkedCount > 0,
+                child: const Text('Clear checked items'),
+              ),
+            ],
           ),
         ],
       ),
       body: Column(
         children: [
-          if (cart.purpose.trim().isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  cart.purpose,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                  ),
-                ),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _itemCtrl,
-                    focusNode: _itemFocus,
-                    textCapitalization: TextCapitalization.sentences,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _addItem(),
-                    decoration: const InputDecoration(
-                      hintText: 'Add item…',
-                      prefixIcon: Icon(Iconsax.add, size: 20),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _addItem,
-                  icon: const Icon(Iconsax.arrow_right_3),
-                ),
-              ],
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Align(
@@ -175,11 +92,11 @@ class _CartDetailPageState extends ConsumerState<CartDetailPage> {
             child: items.isEmpty
                 ? Center(
                     child: Text(
-                      'Add items above.\nChecked items move to the bottom.',
+                      'Add an item below.\nChecked items move to the bottom.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.45),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.45),
                       ),
                     ),
                   )
@@ -188,21 +105,44 @@ class _CartDetailPageState extends ConsumerState<CartDetailPage> {
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
+                      final row = Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        child: CheckboxListTile(
+                          value: item.checked,
+                          onChanged: (_) => ref
+                              .read(cartsProvider.notifier)
+                              .toggleItem(cart!.id, item.id),
+                          title: Text(
+                            item.name,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              decoration: item.checked
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              color: item.checked
+                                  ? theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.4)
+                                  : null,
+                            ),
+                          ),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                      );
+                      if (!item.checked) return row;
                       return Dismissible(
                         key: ValueKey(item.id),
                         direction: DismissDirection.endToStart,
-                        onDismissed: (_) {
-                          ref
-                              .read(cartsProvider.notifier)
-                              .removeItem(widget.cartId, item.id);
-                        },
+                        onDismissed: (_) => ref
+                            .read(cartsProvider.notifier)
+                            .removeItem(cart!.id, item.id),
                         background: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.only(right: 20),
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.error
-                                .withValues(alpha: 0.15),
+                            color:
+                                theme.colorScheme.error.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
@@ -210,39 +150,45 @@ class _CartDetailPageState extends ConsumerState<CartDetailPage> {
                             color: theme.colorScheme.error,
                           ),
                         ),
-                        child: Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          child: CheckboxListTile(
-                            value: item.checked,
-                            onChanged: (_) {
-                              ref
-                                  .read(cartsProvider.notifier)
-                                  .toggleItem(widget.cartId, item.id);
-                            },
-                            title: Text(
-                              item.name,
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                decoration: item.checked
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                                color: item.checked
-                                    ? theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.4)
-                                    : null,
-                              ),
-                            ),
-                            controlAffinity: ListTileControlAffinity.leading,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                            ),
-                          ),
-                        ),
+                        child: row,
                       );
                     },
                   ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _itemsCtrl,
+                    minLines: 1,
+                    maxLines: 1,
+                    textCapitalization: TextCapitalization.sentences,
+                    textInputAction: TextInputAction.done,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'[\r\n]')),
+                    ],
+                    onSubmitted: (_) => _addItems(cart!),
+                    decoration: const InputDecoration(
+                      hintText: 'Add an item…',
+                      prefixIcon: Icon(Iconsax.add, size: 20),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  tooltip: 'Add item',
+                  onPressed: () => _addItems(cart!),
+                  icon: const Icon(Iconsax.arrow_right_3),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 }
+
+enum _CartAction { clearChecked }

@@ -5,6 +5,7 @@
     android:minResizeWidth="110dp"
     android:minResizeHeight="80dp"
     android:updatePeriodMillis="1800000"
-    android:initialLayout="@layout/pocket_hq_widget"
+    android:initialLayout="@layout/shopping_cart_widget"
+    android:description="@string/shopping_cart_widget_description"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

@@ -1,12 +1,18 @@
-
 import 'package:hive/hive.dart';
 
 import '../models/habit.dart';
 import '../models/note.dart';
+import '../models/shopping_cart.dart';
 import '../models/trip.dart';
 import '../models/vault_note.dart';
 
 Future<void> registerHiveAdapters() async {
+  if (!Hive.isAdapterRegistered(6)) {
+    Hive.registerAdapter(ShoppingCartAdapter());
+  }
+  if (!Hive.isAdapterRegistered(5)) {
+    Hive.registerAdapter(CartItemAdapter());
+  }
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(HabitAdapter());
   }

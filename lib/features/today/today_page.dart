@@ -3,11 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../core/router/app_router.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/widgets/matte_card.dart';
 import '../../providers/dashboard_provider.dart';
 import '../bottom_nav_bar.dart';
-import 'widgets/calendar_preview_card.dart';
 import 'widgets/focus_preview_card.dart';
 import 'widgets/habits_preview_card.dart';
 import 'widgets/notes_preview_card.dart';
@@ -24,15 +22,73 @@ class TodayPage extends ConsumerWidget {
     final now = DateTime.now();
 
     return Scaffold(
-      // drawer: Drawer(
-      //     child: ListView(
-      //   children: [ListTile(title: Text('Shopping Cart'))],
-      // )),
+      drawer: Drawer(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                      child: Text(
+                        'Pocket HQ',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    _DrawerDestination(
+                      icon: Iconsax.shopping_cart,
+                      title: 'To Get',
+                      route: AppRoutes.carts,
+                    ),
+                    _DrawerDestination(
+                      icon: Iconsax.notification,
+                      title: 'Reminders',
+                      route: AppRoutes.reminders,
+                    ),
+                    _DrawerDestination(
+                      icon: Iconsax.map,
+                      title: 'Trips',
+                      route: AppRoutes.trips,
+                    ),
+                    _DrawerDestination(
+                      icon: Iconsax.chart_2,
+                      title: 'Screen time usage',
+                      route: AppRoutes.focus,
+                    ),
+                  ],
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: IconButton(
+                    tooltip: 'Settings',
+                    onPressed: () {
+                      Navigator.pop(context);
+                      AppRouter.push(context, AppRoutes.settings);
+                    },
+                    icon: const Icon(Iconsax.setting_2),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       appBar: AppBar(
-        // leading: IconButton(
-        //   onPressed: () => Scaffold.of(context).openDrawer(),
-        //   icon: const Icon(Iconsax.menu),
-        // ),
+        automaticallyImplyLeading: false,
+        leading: Builder(
+          builder: (context) => IconButton(
+            tooltip: 'Open navigation menu',
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            icon: const Icon(Icons.menu),
+          ),
+        ),
         title: Text(
           _greeting(),
           style: theme.textTheme.headlineSmall?.copyWith(
@@ -40,22 +96,6 @@ class TodayPage extends ConsumerWidget {
             letterSpacing: -0.5,
           ),
         ),
-        actions: [
-          Material(
-            color: theme.brightness == Brightness.dark
-                ? const Color(0xFF1E2128)
-                : const Color(0xFFEEF0F4),
-            borderRadius: BorderRadius.circular(AppRadii.sm),
-            child: InkWell(
-              onTap: () => AppRouter.push(context, AppRoutes.settings),
-              borderRadius: BorderRadius.circular(AppRadii.sm),
-              child: const Padding(
-                padding: EdgeInsets.all(10),
-                child: Icon(Iconsax.setting_2, size: 20),
-              ),
-            ),
-          ),
-        ],
       ),
       // Text(
       //     'Pocket HQ',
@@ -109,7 +149,7 @@ class TodayPage extends ConsumerWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
+      bottomNavigationBar: const CustomBottomNav(currentIndex: 1),
     );
   }
 
@@ -117,7 +157,6 @@ class TodayPage extends ConsumerWidget {
     return switch (key) {
       'summary' => const SummaryCard(),
       'habits' => const HabitsPreviewCard(),
-      'calendar' => const CalendarPreviewCard(),
       'focus' => const FocusPreviewCard(),
       'notes' => const NotesPreviewCard(),
       'trips' => const TripsPreviewCard(),
@@ -157,6 +196,30 @@ class TodayPage extends ConsumerWidget {
       'December'
     ];
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
+  }
+}
+
+class _DrawerDestination extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String route;
+
+  const _DrawerDestination({
+    required this.icon,
+    required this.title,
+    required this.route,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      onTap: () {
+        Navigator.pop(context);
+        AppRouter.push(context, route);
+      },
+    );
   }
 }
 

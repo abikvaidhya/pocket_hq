@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax/iconsax.dart';
 
 import '../../../data/models/vault_note.dart';
 import '../../../providers/vault_provider.dart';
@@ -79,7 +78,7 @@ class _VaultEditorPageState extends ConsumerState<VaultEditorPage> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Iconsax.arrow_left),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () async {
               final ok = await _onWillPop();
               if (ok && context.mounted) Navigator.of(context).pop();
@@ -89,7 +88,7 @@ class _VaultEditorPageState extends ConsumerState<VaultEditorPage> {
           actions: [
             IconButton(
               onPressed: _save,
-              icon: const Icon(Iconsax.tick_circle),
+              icon: const Icon(Icons.check),
               tooltip: 'Save',
             ),
           ],

@@ -12,11 +12,7 @@ final cartsProvider =
 
 final pinnedCartProvider = Provider<ShoppingCart?>((ref) {
   final carts = ref.watch(cartsProvider);
-  try {
-    return carts.firstWhere((c) => c.isPinned);
-  } catch (_) {
-    return null;
-  }
+  return carts.isEmpty ? null : carts.first;
 });
 
 class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
@@ -35,17 +31,6 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     state = list;
   }
 
-  Future<ShoppingCart> create({
-    String title = '',
-    String purpose = '',
-  }) async {
-    final cart = ShoppingCart(title: title, purpose: purpose);
-    await _box.put(cart.id, cart);
-    _load();
-    WidgetSyncBus.notify(WidgetSyncSection.carts);
-    return cart;
-  }
-
   Future<void> updateCart(ShoppingCart cart) async {
     cart.updatedAt = DateTime.now();
     await _box.put(cart.id, cart);
@@ -53,47 +38,16 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
-  Future<void> delete(String id) async {
-    await _box.delete(id);
-    _load();
-    WidgetSyncBus.notify(WidgetSyncSection.carts);
-  }
-
-  /// Only one cart may be pinned. Pinning this one unpins others.
-  Future<void> setPinned(String id, {bool pinned = true}) async {
-    for (final c in _box.values) {
-      final shouldPin = pinned && c.id == id;
-      if (c.isPinned != shouldPin) {
-        c.isPinned = shouldPin;
-        c.updatedAt = DateTime.now();
-        await c.save();
-      }
-    }
-    _load();
-    WidgetSyncBus.notify(WidgetSyncSection.carts);
-  }
-
-  Future<void> togglePin(String id) async {
-    final cart = _box.get(id);
-    if (cart == null) return;
-    if (cart.isPinned) {
-      cart.isPinned = false;
-      cart.updatedAt = DateTime.now();
-      await cart.save();
-    } else {
-      await setPinned(id, pinned: true);
-      return;
-    }
-    _load();
-    WidgetSyncBus.notify(WidgetSyncSection.carts);
-  }
-
-  Future<void> addItem(String cartId, String name) async {
+  Future<void> addItems(String cartId, Iterable<String> names) async {
     final cart = _box.get(cartId);
     if (cart == null) return;
-    final trimmed = name.trim();
-    if (trimmed.isEmpty) return;
-    cart.items = [...cart.items, CartItem(name: trimmed)];
+    final items = names
+        .map((name) => name.trim())
+        .where((name) => name.isNotEmpty)
+        .map((name) => CartItem(name: name))
+        .toList();
+    if (items.isEmpty) return;
+    cart.items = [...cart.items, ...items];
     cart.updatedAt = DateTime.now();
     await cart.save();
     _load();
@@ -153,17 +107,20 @@ class CartsNotifier extends StateNotifier<List<ShoppingCart>> {
     WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
-  Future<void> renameCart(String cartId,
-      {String? title, String? purpose}) async {
+  Future<void> clearChecked(String cartId) async {
     final cart = _box.get(cartId);
     if (cart == null) return;
-    if (title != null) cart.title = title.trim();
-    if (purpose != null) cart.purpose = purpose.trim();
+    cart.items = cart.items.where((item) => !item.checked).toList();
     cart.updatedAt = DateTime.now();
     await cart.save();
     _load();
     WidgetSyncBus.notify(WidgetSyncSection.carts);
   }
 
-  ShoppingCart? getById(String id) => _box.get(id);
+  ShoppingCart? get cart => _box.values.isEmpty ? null : _box.values.first;
+
+  Future<void> toggleItemById(String itemId) async {
+    final cart = this.cart;
+    if (cart != null) await toggleItem(cart.id, itemId);
+  }
 }
